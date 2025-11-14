@@ -1,9 +1,2 @@
-**
-!.gitignore
-!README.md
-!src
-!src/*.cpp
-!src/*.hpp
-!deps
-!deps/**
-!Makefile
+snapple
+*.o
