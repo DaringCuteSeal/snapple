@@ -1,0 +1,63 @@
+#include "../prelude.hpp"
+#include "components.hpp"
+using namespace GameComponents;
+
+SceneManager::SceneManager(Scene* initial_scene) {
+	this->current_scene = initial_scene;
+}
+
+void SceneManager::draw() {
+	this->current_scene->draw();
+}
+
+void SceneManager::update() {
+	this->current_scene->update();
+}
+
+void SceneManager::set_scene(Scene* initial_scene) {
+	this->current_scene = initial_scene;
+}
+
+string SceneManager::current_id() {
+	return this->current_scene->id;
+}
+
+EventManager::EventManager() {
+
+}
+
+void EventManager::update() {
+	while (!this->events.empty()){
+		Event e = this->events.front();
+		this->events.pop();
+		e.exec();
+	}
+}
+
+void EventManager::dispatch(Event event){
+	this->events.push(event);
+}
+
+SpriteManager::SpriteManager() {
+
+}
+
+void SpriteManager::draw() {
+	for (auto& s : this->sprites){
+		s.draw();
+	}
+}
+
+void SpriteManager::update() {
+	for (auto& s : this->sprites){
+		s.update();
+	}
+}
+
+void SpriteManager::delete_all() {
+	this->sprites.clear();
+}
+
+void SpriteManager::append(Sprite sprite) {
+	this->sprites.push_back(sprite);
+}
