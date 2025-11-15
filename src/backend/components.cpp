@@ -74,8 +74,8 @@ void Timer::attach(double duration, void (*exec)()){
 }
 
 void Timer::update() {
-	int n = this->timers.size();
-	int partition = 0;
+	size_t n = this->timers.size();
+	size_t partition = 0;
 	// Mirip teknik partisi lomuto: untuk timer yang udah expired ditaro di
 	// ujung. habis itu, vektor-nya di trim biar cuman yang masih belum expired
 	// yang disimpan.
