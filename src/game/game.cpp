@@ -2,9 +2,10 @@
 #include "game.hpp"
 
 class DefaultScene : public GameComponents::Scene {
-	
+private:
+public:
 	void draw() {
-
+		ClearBackground(WHITE);
 	}
 
 	void update() {
@@ -21,9 +22,6 @@ void Game::update() {
 void Game::draw() {
 	BeginDrawing();
 
-	this->window->ClearBackground(BROWN);
-
-	DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
 
 	EndDrawing();
 	this->game_state_manager.draw();
