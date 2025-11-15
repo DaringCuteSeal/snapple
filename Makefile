@@ -21,8 +21,12 @@ TARGET = snapple
 # Define source files
 SRCS = src/backend/components.cpp src/game/game.cpp src/main.cpp
 
+SRCS_TEST = src/backend/components.cpp tests/tests.cpp
+
 # Define object files
 OBJS = $(SRCS:.cpp=.o)
+
+OBJS_TEST = $(SRCS_TEST:.cpp=.o)
 
 # Default target: build the executable
 all: $(TARGET)
@@ -36,4 +40,9 @@ $(TARGET): $(OBJS)
 
 # Clean target: remove generated files
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET) $(OBJS_TEST) test_backend
+
+# Test target
+test: $(OBJS_TEST)
+	$(CXX) $(OBJS_TEST) $(LDFLAGS) -lgtest -o testsuite
+	./testsuite

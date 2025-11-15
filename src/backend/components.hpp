@@ -1,3 +1,4 @@
+#include "../prelude.hpp"
 #include <memory>
 #include <queue>
 #include <string>
@@ -110,6 +111,33 @@ public:
 	void append(unique_ptr<Sprite> sprite);
 };
 
+/** Data type untuk Timer.
+ */
+struct TimerItem {
+public:
+	double expire;
+	void (*exec)();
+};
+
+/** Timer: jalankan fungsi tertentu (callback) setelah waktu habis
+ */
+class Timer {
+private:
+	double(*time_function)();
+
+public:
+	vector<TimerItem> timers;
+	Timer(double(*time_function)() = GetTime);
+
+	/** Tambahkan item timer: jalankan callback yang diberikan setelah `duration` detik.
+	 */
+	void attach(double duration, void (*exec)());
+
+	/** Jalankan perintah setelah waktu sudah expired.
+	 */
+	void update();
+};
+
 /** Koleksi semua komponen agar bisa diakses game kita dengan mudah.
 */
 class GameStateManager {
@@ -117,7 +145,11 @@ public:
 	GameStateManager(Scene* init_scene);
 	SpriteManager sprite_manager;
 	EventManager event_manager;
+	Timer timer;
 	SceneManager scene_manager;
+
+	void update();
+	void draw();
 };
 
 }

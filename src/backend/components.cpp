@@ -1,6 +1,9 @@
-#include "../prelude.hpp"
+#include <iostream>
 #include <memory>
+#include <raylib.h>
 #include "components.hpp"
+
+using std::swap;
 using namespace GameComponents;
 
 SceneManager::SceneManager(Scene* initial_scene) {
@@ -62,5 +65,42 @@ void SpriteManager::append(unique_ptr<Sprite> sprite) {
 	this->sprites.push_back(std::move(sprite));
 }
 
+Timer::Timer(double(*time_function)()){
+	this->time_function = time_function;
+}
+
+void Timer::attach(double duration, void (*exec)()){
+	this->timers.push_back(TimerItem {.expire = this->time_function() + duration, .exec = exec});
+}
+
+void Timer::update() {
+	int n = this->timers.size();
+	int partition = 0;
+	// Mirip teknik partisi lomuto: untuk timer yang udah expired ditaro di
+	// ujung. habis itu, vektor-nya di trim biar cuman yang masih belum expired
+	// yang disimpan.
+	for (size_t i = 0; i < n; i++){
+		if (this->time_function() >= this->timers[i].expire){
+			this->timers[i].exec();
+		} else {
+			swap(this->timers[i], this->timers[partition]);
+			partition += 1;
+		}
+	}
+	timers.resize(partition);
+}
+
 GameStateManager::GameStateManager(Scene* init_scene) : scene_manager(init_scene) {
+}
+
+void GameStateManager::update() {
+	this->event_manager.update();
+	this->timer.update();
+	this->scene_manager.update();
+	this->sprite_manager.update();
+}
+
+void GameStateManager::draw() {
+	this->scene_manager.draw();
+	this->sprite_manager.draw();
 }
