@@ -61,3 +61,6 @@ void SpriteManager::delete_all() {
 void SpriteManager::append(Sprite sprite) {
 	this->sprites.push_back(sprite);
 }
+
+GameStateManager::GameStateManager(Scene* init_scene) : scene_manager(init_scene) {
+}

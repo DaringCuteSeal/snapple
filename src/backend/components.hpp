@@ -112,7 +112,7 @@ public:
 */
 class GameStateManager {
 public:
-	GameStateManager();
+	GameStateManager(Scene* init_scene);
 	SpriteManager sprite_manager;
 	EventManager event_manager;
 	SceneManager scene_manager;
