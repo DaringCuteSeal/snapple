@@ -1,7 +1,9 @@
+#include <memory>
 #include <queue>
 #include <string>
 #include <vector>
-using std::queue, std::string, std::vector;
+
+using std::queue, std::string, std::vector, std::unique_ptr;
 
 namespace GameComponents {
 
@@ -17,8 +19,8 @@ public:
 	 */
 	string id;
 
-	virtual void draw();
-	virtual void update();
+	virtual void draw() = 0;
+	virtual void update() = 0;
 };
 
 /** SceneManager: mengurusi scene yang ditampilkan di layar. Pada game, kita
@@ -59,7 +61,7 @@ public:
  */
 class Event {
 public:
-	virtual void exec();
+	virtual void exec() = 0;
 };
 
 /** EventManager: mengurusi event dispatching. Di game, kita bisa buat beberapa
@@ -71,7 +73,7 @@ public:
 */
 class EventManager {
 private:
-	queue<Event> events;
+	queue<unique_ptr<Event>> events;
 
 public:
 	EventManager();
@@ -84,28 +86,28 @@ public:
 	/** Kirim sebuah event. Method ini menerima event apapun asalkan merupakan
 	 * turunan dari kelas `Event`.
 	*/
-	void dispatch(Event event);
+	void dispatch(unique_ptr<Event> event);
 };
 
 /** Abstract base class untuk SpriteManager.
  */
 class Sprite {
 public:
-	virtual void draw();
-	virtual void update();
+	virtual void draw() = 0;
+	virtual void update() = 0;
 };
 
 /** SpritesManager: mengurusi semua sprite yang ada.
 */
 class SpriteManager {
 private:
-	vector<Sprite> sprites;
+	vector<unique_ptr<Sprite>> sprites;
 public:
 	SpriteManager();
 	void draw();
 	void update();
 	void delete_all();
-	void append(Sprite sprite);
+	void append(unique_ptr<Sprite> sprite);
 };
 
 /** Koleksi semua komponen agar bisa diakses game kita dengan mudah.

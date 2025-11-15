@@ -10,7 +10,7 @@ int main() {
 
 	SetTargetFPS(60);
 
-	Game game;
+	Game game(&window);
 
 	while (!window.ShouldClose()){
 		game.update();

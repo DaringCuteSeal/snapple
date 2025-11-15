@@ -12,11 +12,14 @@ CXXFLAGS = -Wall -g -I./deps/raylib-cpp/include -I./deps/raudio/src
 # -l: Link with the specified library
 LDFLAGS = -lraylib
 
+# Optimization level
+OPTIMIZATION = -O2
+
 # Define the executable name
 TARGET = snapple
 
 # Define source files
-SRCS = src/main.cpp
+SRCS = src/backend/components.cpp src/game/game.cpp src/main.cpp
 
 # Define object files
 OBJS = $(SRCS:.cpp=.o)
@@ -25,7 +28,7 @@ OBJS = $(SRCS:.cpp=.o)
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) $(OBJS) $(LDFLAGS) -o $(TARGET)
+	$(CXX) $(OBJS) $(LDFLAGS) $(OPTIMIZATION) -o $(TARGET)
 
 # Rule for compiling .cpp files into .o files
 %.o: %.cpp

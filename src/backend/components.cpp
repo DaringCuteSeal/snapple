@@ -1,4 +1,5 @@
 #include "../prelude.hpp"
+#include <memory>
 #include "components.hpp"
 using namespace GameComponents;
 
@@ -28,14 +29,13 @@ EventManager::EventManager() {
 
 void EventManager::update() {
 	while (!this->events.empty()){
-		Event e = this->events.front();
+		this->events.front()->exec();
 		this->events.pop();
-		e.exec();
 	}
 }
 
-void EventManager::dispatch(Event event){
-	this->events.push(event);
+void EventManager::dispatch(unique_ptr<Event> event){
+	this->events.push(std::move(event));
 }
 
 SpriteManager::SpriteManager() {
@@ -44,13 +44,13 @@ SpriteManager::SpriteManager() {
 
 void SpriteManager::draw() {
 	for (auto& s : this->sprites){
-		s.draw();
+		s->draw();
 	}
 }
 
 void SpriteManager::update() {
 	for (auto& s : this->sprites){
-		s.update();
+		s->update();
 	}
 }
 
@@ -58,8 +58,8 @@ void SpriteManager::delete_all() {
 	this->sprites.clear();
 }
 
-void SpriteManager::append(Sprite sprite) {
-	this->sprites.push_back(sprite);
+void SpriteManager::append(unique_ptr<Sprite> sprite) {
+	this->sprites.push_back(std::move(sprite));
 }
 
 GameStateManager::GameStateManager(Scene* init_scene) : scene_manager(init_scene) {
