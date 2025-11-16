@@ -25,7 +25,7 @@ public:
 	LetterSprite();
 
 	void bounce_down();
-	void fly_up();
+	void fly_up(double velocity);
 
 	// TODO: ini harusnya ada di constructor. tapi gara gara ada kelas lain
 	// yang ada field kelas ini, jadinya harus di construct langsung. tapi
@@ -232,6 +232,7 @@ private:
 
 	bool is_looping;
 
+	bool show_hint_text;
 	uint8_t hint_text_alpha;
 	double hint_text_last_time;
 	const double hint_text_blink_duration = 1.0;

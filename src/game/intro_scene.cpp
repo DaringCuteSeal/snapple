@@ -13,6 +13,7 @@ IntroScene::IntroScene() {
 	this->is_looping = false;
 
 	this->background = LoadTexture(this->background_filename);
+	this->show_hint_text = false;
 	this->hint_text_alpha = 0;
 
 	// load texture nya letters kita
@@ -40,10 +41,12 @@ void IntroScene::letters_bounce_down() {
 }
 
 void IntroScene::letters_fly_up() {
+	double v = 2;
 	for (size_t i = 0; i < this->n_letters; i++) {
-		this->letter_sprites[i].fly_up();
 		this->letter_sprites[i].set_ground(this->letters_y_min);
 		this->letter_sprites[i].pos.col = this->letters_x_pos[i];
+		this->letter_sprites[i].fly_up(v);
+		v += 2;
 	}
 }
 
@@ -61,8 +64,10 @@ void IntroScene::draw() {
 		this->intro_animation[this->current_frame].Draw(0, 0);
 	}
 
-	// kasih hint mulai main
-	DrawTextEx(*(this->game_font), string("SPASI untuk mulai..."), raylib::Vector2(1450, 1011), 60, 1.0, {255, 255, 255, this->hint_text_alpha});
+	if (this->show_hint_text){
+		// kasih hint mulai main
+		DrawTextEx(*(this->game_font), string("SPASI untuk mulai..."), raylib::Vector2(1450, 1011), 60, 1.0, {255, 255, 255, this->hint_text_alpha});
+	}
 }
 
 void IntroScene::update() {
@@ -81,19 +86,22 @@ void IntroScene::update() {
 			this->last_time = GetTime();
 		}
 
-		// teks
-		if (GetTime() - this->hint_text_last_time >= this->hint_text_blink_duration){
-			if (this->hint_text_alpha == 255){
-				hint_text_alpha = 0;
-			} else {
-				hint_text_alpha = 255;
+		// teks, update kalo muncul
+		if (this->show_hint_text) {
+			if (GetTime() - this->hint_text_last_time >= this->hint_text_blink_duration){
+				if (this->hint_text_alpha == 255){
+					hint_text_alpha = 0;
+				} else {
+					hint_text_alpha = 255;
+				}
+				this->hint_text_last_time = GetTime();
 			}
-			this->hint_text_last_time = GetTime();
 		}
 
-		if (IsKeyDown(KEY_SPACE)){
-			// this->game_state_manager->event_manager.dispatch(GameComponents::Event {[this](){std::cout<<"AAAA"<<current_frame<<std::flush<<"\n";}});
-
+		if (IsKeyPressed(KEY_SPACE)) {
+			this->game_state_manager->event_manager.dispatch(GameComponents::Event {[this](){
+				this->letters_fly_up();
+			}});
 		}
 
 	} else { // masih animasi awal
@@ -101,6 +109,7 @@ void IntroScene::update() {
 			this->current_frame += 1;
 			this->last_time = GetTime();
 			if (this->current_frame == this->n_frames - 1){
+				this->show_hint_text = true;
 				this->is_looping = true;
 				this->letters_bounce_down();
 			}
@@ -128,10 +137,13 @@ void LetterSprite::bounce_down() {
 	this->ay = abs(this->ay);
 }
 
-void LetterSprite::fly_up() {
+/** Bikin teks terbang ke atas, dengan awalnya turun ke bawah dulu.
+ * Catatan: `velocity` harus positif.
+*/
+void LetterSprite::fly_up(double velocity) {
 	this->state = FLY_UP;
-	this->vy = this->v_down;
-	this->ay = -1 * abs(this->ay);
+	this->vy = velocity;
+	this->ay = -1 * abs(this->ay); // jadi negatif biar naik
 }
 
 void LetterSprite::update() {
@@ -149,7 +161,7 @@ void LetterSprite::update() {
 		break;
 
 		case FLY_UP:
-			if (this->pos.row > this->ground_y) return;
+			if (this->pos.row <= this->ground_y) return;
 			this->vy += this->ay; // akselerasi
 			this->pos.row += this->vy; // ubah posisi berdasarkan kecepatan
 		break;
