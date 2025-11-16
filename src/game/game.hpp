@@ -1,6 +1,7 @@
 #include "../backend/components.hpp"
 #include "../prelude.hpp"
-#include "intro_scene.hpp"
+#include "scene_intro.hpp"
+#include "scene_interlude.hpp"
 
 #define FONT_PATH "assets/delius-font/delius-regular.ttf"
 
@@ -11,6 +12,7 @@ private:
 
 	raylib::Window* window;
 	IntroScene intro_scene;
+	InterludeScene interlude_scene;
 
 public:
 	Game();

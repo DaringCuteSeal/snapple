@@ -109,8 +109,7 @@ public:
 	*/
 	void update();
 
-	/** Kirim sebuah event. Method ini menerima event apapun asalkan merupakan
-	 * turunan dari kelas `Event`.
+	/** Kirim sebuah event untuk dijalankan callbacknya.
 	*/
 	void dispatch(Event event);
 };
@@ -162,9 +161,5 @@ struct Coordinate {
 	int row;
 	int col;
 };
-
-/** Tulis tulisan di layar.
-*/
-void draw_text(const char* text, int row, int col, float size, Color tint);
 
 }

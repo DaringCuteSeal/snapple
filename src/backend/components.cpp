@@ -93,6 +93,8 @@ GameStateManager::GameStateManager(Scene* init_scene) : scene_manager(init_scene
 }
 
 void GameStateManager::update() {
+	// !! penting: proses event dan timer dulu sebelum scene di update agar semua
+	// event yang telah diantrikan dapat langsung dijalankan.
 	this->event_manager.update();
 	this->timer.update();
 	this->scene_manager.update();
