@@ -1,4 +1,3 @@
-#include <iostream>
 #include <memory>
 #include <raylib.h>
 #include "components.hpp"
@@ -10,12 +9,22 @@ SceneManager::SceneManager(Scene* initial_scene) {
 	this->current_scene = initial_scene;
 }
 
+void Scene::update_all() {
+	this->sprite_manager.update();
+	this->update();
+}
+
+void Scene::draw_all() {
+	this->sprite_manager.draw();
+	this->draw();
+}
+
 void SceneManager::draw() {
-	this->current_scene->draw();
+	this->current_scene->draw_all();
 }
 
 void SceneManager::update() {
-	this->current_scene->update();
+	this->current_scene->update_all();
 }
 
 void SceneManager::set_scene(Scene* initial_scene) {
@@ -97,10 +106,8 @@ void GameStateManager::update() {
 	this->event_manager.update();
 	this->timer.update();
 	this->scene_manager.update();
-	this->sprite_manager.update();
 }
 
 void GameStateManager::draw() {
 	this->scene_manager.draw();
-	this->sprite_manager.draw();
 }

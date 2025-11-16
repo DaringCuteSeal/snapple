@@ -14,16 +14,48 @@ namespace GameComponents {
  * Catatan: BUKAN game-nya sendiri.
 */
 
+/** Abstract base class untuk SpriteManager.
+ */
+class Sprite {
+public:
+	virtual void draw() = 0;
+	virtual void update() = 0;
+};
+
+/** SpritesManager: mengurusi semua sprite yang ada.
+*/
+class SpriteManager {
+private:
+	vector<unique_ptr<Sprite>> sprites;
+public:
+	SpriteManager();
+	void draw();
+	void update();
+	void delete_all();
+	void append(unique_ptr<Sprite> sprite);
+};
+
 /** Abstract class scene untuk SceneManager. Kita bisa buat implementasi khusus.
  */
 class Scene {
+private:
 public:
+	SpriteManager sprite_manager;
+
 	/** ID dari scene.
 	 */
 	string id;
 
 	virtual void draw() = 0;
 	virtual void update() = 0;
+
+	// dipanggil untuk meng-update dan draw sprites jadi tidak harus
+	// diimplementasikan ulang oleh kelas-kelas yang inherit kelas Scene ini.
+	void draw_all();
+
+	// dipanggil untuk meng-update dan draw sprites jadi tidak harus
+	// diimplementasikan ulang oleh kelas-kelas yang inherit kelas Scene ini.
+	void update_all();
 };
 
 /** SceneManager: mengurusi scene yang ditampilkan di layar. Pada game, kita
@@ -92,27 +124,6 @@ public:
 	void dispatch(unique_ptr<Event> event);
 };
 
-/** Abstract base class untuk SpriteManager.
- */
-class Sprite {
-public:
-	virtual void draw() = 0;
-	virtual void update() = 0;
-};
-
-/** SpritesManager: mengurusi semua sprite yang ada.
-*/
-class SpriteManager {
-private:
-	vector<unique_ptr<Sprite>> sprites;
-public:
-	SpriteManager();
-	void draw();
-	void update();
-	void delete_all();
-	void append(unique_ptr<Sprite> sprite);
-};
-
 /** Data type untuk Timer.
  */
 struct TimerItem {
@@ -145,7 +156,6 @@ public:
 class GameStateManager {
 public:
 	GameStateManager(Scene* init_scene);
-	SpriteManager sprite_manager;
 	EventManager event_manager;
 	Timer timer;
 	SceneManager scene_manager;
