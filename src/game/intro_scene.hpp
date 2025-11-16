@@ -2,25 +2,35 @@
 #include "../backend/components.hpp"
 #include <cstdint>
 
+enum TextState {
+	NONE,
+	BOUNCE_DOWN,
+	FLY_UP
+};
+
 class LetterSprite : GameComponents::Sprite {
 private:
-	const double ay = 0.8; // percepatan sumbu y
 	const uint8_t max_bounces = 3;
 	const double COR = 0.45; // koefisien restitusi (vy setelah mantul ÷ vy sebelum mantul)
+	const double v_down = 15; // kecepatan pas awal transisi terbang ke atas
+	double ay = 0.8; // percepatan sumbu y
 	raylib::Texture2D texture;
 	int ground_y;
 	double vy; // kecepatan sumbu y
 	uint8_t bounces;
+	TextState state;
 public:
 	GameComponents::Coordinate pos;
-	bool is_bouncing;
 
 	LetterSprite();
 
-	// TODO: aneh, ini harusnya
-	// ada di constructor. tapi gara gara ada kelas lain yang ada field kelas ini,
-	// jadinya harus di construct langsung. tapi kalo aku taro di constructor
-	// nanti malah kelas lain itu gabisa di construct -_-
+	void bounce_down();
+	void fly_up();
+
+	// TODO: ini harusnya ada di constructor. tapi gara gara ada kelas lain
+	// yang ada field kelas ini, jadinya harus di construct langsung. tapi
+	// kalo aku taro di constructor nanti malah kelas lain itu gabisa di
+	// construct -_-
 	void load_texture(const char* letter_file_name);
 	void set_ground(size_t y);
 	void draw();
@@ -200,7 +210,7 @@ private:
 		112
 	};
 
-	const int x_pos[n_letters] = {
+	const int letters_x_pos[n_letters] = {
 		274,
 		523,
 		735,
@@ -209,6 +219,8 @@ private:
 		1214,
 		1370
 	};
+
+	const int letters_y_min = -500;
 
 	LetterSprite letter_sprites[n_letters];
 
@@ -228,6 +240,8 @@ private:
 
 public:
 	IntroScene();
+	void letters_bounce_down();
+	void letters_fly_up();
 	void set_font(raylib::Font* game_font);
 	void draw();
 	void update();
