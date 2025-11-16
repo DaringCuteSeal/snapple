@@ -9,22 +9,12 @@ SceneManager::SceneManager(Scene* initial_scene) {
 	this->current_scene = initial_scene;
 }
 
-void Scene::update_all() {
-	this->sprite_manager.update();
-	this->update();
-}
-
-void Scene::draw_all() {
-	this->sprite_manager.draw();
-	this->draw();
-}
-
 void SceneManager::draw() {
-	this->current_scene->draw_all();
+	this->current_scene->draw();
 }
 
 void SceneManager::update() {
-	this->current_scene->update_all();
+	this->current_scene->update();
 }
 
 void SceneManager::set_scene(Scene* initial_scene) {

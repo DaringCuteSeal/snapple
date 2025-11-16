@@ -14,6 +14,7 @@ namespace GameComponents {
  * Catatan: BUKAN game-nya sendiri.
 */
 
+// TODO: mungkin ga kepake
 /** Abstract base class untuk SpriteManager.
  */
 class Sprite {
@@ -40,22 +41,14 @@ public:
 class Scene {
 private:
 public:
-	SpriteManager sprite_manager;
 
 	/** ID dari scene.
 	 */
-	string id;
+	const char* id;
 
 	virtual void draw() = 0;
 	virtual void update() = 0;
 
-	// dipanggil untuk meng-update dan draw sprites jadi tidak harus
-	// diimplementasikan ulang oleh kelas-kelas yang inherit kelas Scene ini.
-	void draw_all();
-
-	// dipanggil untuk meng-update dan draw sprites jadi tidak harus
-	// diimplementasikan ulang oleh kelas-kelas yang inherit kelas Scene ini.
-	void update_all();
 };
 
 /** SceneManager: mengurusi scene yang ditampilkan di layar. Pada game, kita
@@ -162,6 +155,14 @@ public:
 
 	void update();
 	void draw();
+};
+
+
+/** Representing a coordinate.
+*/
+struct Coordinate {
+	size_t row;
+	size_t col;
 };
 
 }
