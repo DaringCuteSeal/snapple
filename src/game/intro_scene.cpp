@@ -92,7 +92,7 @@ void IntroScene::update() {
 		}
 
 		if (IsKeyDown(KEY_SPACE)){
-			this->game_state_manager->event_manager.dispatch(GameComponents::Event {[](){}});
+			// this->game_state_manager->event_manager.dispatch(GameComponents::Event {[this](){std::cout<<"AAAA"<<current_frame<<std::flush<<"\n";}});
 
 		}
 
@@ -135,7 +135,6 @@ void LetterSprite::fly_up() {
 }
 
 void LetterSprite::update() {
-	std::cout << this->state << " " << this->texture.id << " "<<this->pos.row << " " << this->pos.col <<" \n";
 	switch(this->state) {
 		case BOUNCE_DOWN:
 			if (bounces >= this->max_bounces) return;
@@ -153,6 +152,7 @@ void LetterSprite::update() {
 			if (this->pos.row > this->ground_y) return;
 			this->vy += this->ay; // akselerasi
 			this->pos.row += this->vy; // ubah posisi berdasarkan kecepatan
+		break;
 
 		case NONE:
 			break;
