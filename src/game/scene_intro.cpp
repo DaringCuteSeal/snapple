@@ -33,7 +33,7 @@ void IntroScene::init(raylib::Font* game_font, GameComponents::GameStateManager*
 }
 
 void IntroScene::letters_bounce_down() {
-	size_t y = this->letters_v_up;
+	size_t y = this->letters_y_min;
 	for (size_t i = 0; i < this->n_letters; i++) {
 		this->letter_sprites[i].bounce_down();
 		this->letter_sprites[i].set_ground(this->ground_y[i]);
