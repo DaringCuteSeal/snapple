@@ -6,4 +6,4 @@
 
 # Testing
 
-Run `make test`. The resulting executable is called `testsuite`.
+Install `gtest` (Google Test). Then, run `make test`. The resulting executable is called `testsuite`.
