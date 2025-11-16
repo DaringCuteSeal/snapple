@@ -2,10 +2,6 @@
 #include <cstdlib>
 #include <raylib.h>
 
-void IntroScene::set_font(raylib::Font* game_font){
-	this->game_font = game_font;
-}
-
 IntroScene::IntroScene() {
 	// Load semua frame animasi ke memori
 	for (size_t i = 0; i < this->n_frames; i++) {
@@ -25,6 +21,11 @@ IntroScene::IntroScene() {
 		this->letter_sprites[i].pos.row = this->letters_y_min;
 		this->letter_sprites[i].pos.col = this->letters_x_pos[i];
 	}
+}
+
+void IntroScene::init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager){
+	this->game_font = game_font;
+	this->game_state_manager = game_state_manager;
 }
 
 void IntroScene::letters_bounce_down() {
@@ -88,6 +89,11 @@ void IntroScene::update() {
 				hint_text_alpha = 255;
 			}
 			this->hint_text_last_time = GetTime();
+		}
+
+		if (IsKeyDown(KEY_SPACE)){
+			this->game_state_manager->event_manager.dispatch(GameComponents::Event {[](){}});
+
 		}
 
 	} else { // masih animasi awal

@@ -13,7 +13,14 @@ void Game::draw() {
 	EndDrawing();
 };
 
+void Game::start_game_interlude() {
+}
+
+void Game::start_game() {
+}
+
+
 Game::Game() : game_state_manager(&this->intro_scene) {
 	this->game_font.Load(FONT_PATH, 50, 0, 0);
-	this->intro_scene.set_font(&this->game_font);
+	this->intro_scene.init(&this->game_font, &this->game_state_manager);
 }

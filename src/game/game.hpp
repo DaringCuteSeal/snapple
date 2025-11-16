@@ -16,4 +16,6 @@ public:
 	Game();
 	void update();
 	void draw();
+	void start_game_interlude();
+	void start_game();
 };
