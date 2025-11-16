@@ -68,8 +68,8 @@ Timer::Timer(double(*time_function)()){
 	this->time_function = time_function;
 }
 
-void Timer::attach(double duration, void (*exec)()){
-	this->timers.push_back(TimerItem {.expire = this->time_function() + duration, .exec = exec});
+void Timer::attach(double duration, function<void()> callback){
+	this->timers.push_back(TimerItem {.expire = this->time_function() + duration, .callback = callback});
 }
 
 void Timer::update() {
@@ -80,7 +80,7 @@ void Timer::update() {
 	// yang disimpan.
 	for (size_t i = 0; i < n; i++){
 		if (this->time_function() >= this->timers[i].expire){
-			this->timers[i].exec();
+			this->timers[i].callback();
 		} else {
 			swap(this->timers[i], this->timers[partition]);
 			partition += 1;

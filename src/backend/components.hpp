@@ -86,19 +86,17 @@ public:
 	string current_id();
 };
 
-/** Abstract base class untuk EventManager. Kita bisa buat implementasi khusus.
+/** Sebuah event.
  */
 struct Event {
 	function<void()> callback;
 };
 
-/** EventManager: mengurusi event dispatching. Di game, kita bisa buat beberapa
- * Event yang memiliki implementasi sendiri.
+/** EventManager: mengurusi event dispatching.
  *
  * Eksekusi event itu blocking, sehingga kita tidak boleh menambahkan callback
- * (di sini implementasi dari Event.exec()) yang blocking pula. Kita harus
- * menggunakan pola state machine.
-*/
+ * yang blocking pula.
+ */
 class EventManager {
 private:
 	queue<Event> events;
@@ -122,10 +120,10 @@ public:
 struct TimerItem {
 public:
 	double expire;
-	void (*exec)();
+	function<void()> callback;
 };
 
-/** Timer: jalankan fungsi tertentu (callback) setelah waktu habis
+/** Timer: jalankan fungsi tertentu (callback) setelah waktu habis.
  */
 class Timer {
 private:
@@ -137,7 +135,7 @@ public:
 
 	/** Tambahkan item timer: jalankan callback yang diberikan setelah `duration` detik.
 	 */
-	void attach(double duration, void (*exec)());
+	void attach(double duration, function<void()> callback);
 
 	/** Jalankan perintah setelah waktu sudah expired.
 	 */
