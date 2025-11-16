@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../prelude.hpp"
 #include <memory>
 #include <queue>

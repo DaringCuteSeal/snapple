@@ -5,21 +5,18 @@ CXX = g++
 # -Wall: Enable all standard warnings
 # -g: Include debugging information
 # -I: Add directory to the list of directories to be searched for header files
-CXXFLAGS = -Wall -g -I./deps/raylib-cpp/include -I./deps/raudio/src
+CXXFLAGS = -g -O2 -Wall -g -I./deps/raylib-cpp/include -I./deps/raudio/src
 
 # Linker flags:
 # -L: Add directory to the list of directories to be searched for library files
 # -l: Link with the specified library
 LDFLAGS = -lraylib
 
-# Optimization level
-OPTIMIZATION = -O2
-
 # Define the executable name
 TARGET = snapple
 
 # Define source files
-SRCS = src/backend/components.cpp src/game/game.cpp src/main.cpp
+SRCS = src/backend/components.cpp src/game/game.cpp src/game/intro_scene.cpp src/main.cpp
 
 SRCS_TEST = src/backend/components.cpp tests/tests.cpp
 
@@ -32,7 +29,7 @@ OBJS_TEST = $(SRCS_TEST:.cpp=.o)
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) $(OBJS) $(LDFLAGS) $(OPTIMIZATION) -o $(TARGET)
+	$(CXX) $(OBJS) $(LDFLAGS) -o $(TARGET)
 
 # Rule for compiling .cpp files into .o files
 %.o: %.cpp

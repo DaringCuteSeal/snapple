@@ -6,13 +6,13 @@
  * menjalankan game hingga jendela ditutup.
  */
 int main() {
-	raylib::Window window(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
+	raylib::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
 
-	SetTargetFPS(60);
+	SetTargetFPS(FPS);
 
-	Game game(&window);
+	Game game;
 
-	while (!window.ShouldClose()){
+	while (!raylib::Window::ShouldClose()){
 		game.update();
 		game.draw();
 	}
