@@ -31,13 +31,13 @@ EventManager::EventManager() {
 
 void EventManager::update() {
 	while (!this->events.empty()){
-		this->events.front()->exec();
+		this->events.front().callback();
 		this->events.pop();
 	}
 }
 
-void EventManager::dispatch(unique_ptr<Event> event){
-	this->events.push(std::move(event));
+void EventManager::dispatch(Event event){
+	this->events.push(event);
 }
 
 SpriteManager::SpriteManager() {

@@ -1,12 +1,13 @@
 #pragma once
 
 #include "../prelude.hpp"
+#include <functional>
 #include <memory>
 #include <queue>
 #include <string>
 #include <vector>
 
-using std::queue, std::string, std::vector, std::unique_ptr;
+using std::queue, std::string, std::vector, std::unique_ptr, std::function;
 
 namespace GameComponents {
 
@@ -87,9 +88,8 @@ public:
 
 /** Abstract base class untuk EventManager. Kita bisa buat implementasi khusus.
  */
-class Event {
-public:
-	virtual void exec() = 0;
+struct Event {
+	function<void()> callback;
 };
 
 /** EventManager: mengurusi event dispatching. Di game, kita bisa buat beberapa
@@ -101,7 +101,7 @@ public:
 */
 class EventManager {
 private:
-	queue<unique_ptr<Event>> events;
+	queue<Event> events;
 
 public:
 	EventManager();
@@ -114,7 +114,7 @@ public:
 	/** Kirim sebuah event. Method ini menerima event apapun asalkan merupakan
 	 * turunan dari kelas `Event`.
 	*/
-	void dispatch(unique_ptr<Event> event);
+	void dispatch(Event event);
 };
 
 /** Data type untuk Timer.
