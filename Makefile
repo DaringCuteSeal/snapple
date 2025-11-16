@@ -1,15 +1,10 @@
 # Define the C++ compiler
 CXX = g++
 
-# Compiler flags:
-# -Wall: Enable all standard warnings
-# -g: Include debugging information
-# -I: Add directory to the list of directories to be searched for header files
-CXXFLAGS = -g -O2 -Wall -g -I./deps/raylib-cpp/include -I./deps/raudio/src
+# Compiler flags
+CXXFLAGS = -O3 -Wall -I./deps/raylib-cpp/include -I./deps/raudio/src
 
-# Linker flags:
-# -L: Add directory to the list of directories to be searched for library files
-# -l: Link with the specified library
+# Linker flags
 LDFLAGS = -lraylib
 
 # Define the executable name
