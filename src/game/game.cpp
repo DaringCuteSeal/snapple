@@ -14,4 +14,6 @@ void Game::draw() {
 };
 
 Game::Game() : game_state_manager(&this->intro_scene) {
+	this->game_font.Load(FONT_PATH, 50, 0, 0);
+	this->intro_scene.set_font(&this->game_font);
 }

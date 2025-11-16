@@ -161,8 +161,12 @@ public:
 /** Representing a coordinate.
 */
 struct Coordinate {
-	size_t row;
-	size_t col;
+	int row;
+	int col;
 };
+
+/** Tulis tulisan di layar.
+*/
+void draw_text(const char* text, int row, int col, float size, Color tint);
 
 }

@@ -1,8 +1,35 @@
 #include "../prelude.hpp"
 #include "../backend/components.hpp"
+#include <cstdint>
+
+class LetterSprite : GameComponents::Sprite {
+private:
+	const double ay = 0.8; // percepatan sumbu y
+	const uint8_t max_bounces = 3;
+	const double COR = 0.45; // koefisien restitusi (vy setelah mantul ÷ vy sebelum mantul)
+	raylib::Texture2D texture;
+	int ground_y;
+	double vy; // kecepatan sumbu y
+	uint8_t bounces;
+public:
+	GameComponents::Coordinate pos;
+	bool is_bouncing;
+
+	LetterSprite();
+
+	// TODO: aneh, ini harusnya
+	// ada di constructor. tapi gara gara ada kelas lain yang ada field kelas ini,
+	// jadinya harus di construct langsung. tapi kalo aku taro di constructor
+	// nanti malah kelas lain itu gabisa di construct -_-
+	void load_texture(const char* letter_file_name);
+	void set_ground(size_t y);
+	void draw();
+	void update();
+};
 
 class IntroScene : public GameComponents::Scene {
 private:
+	const char* id = "intro";
 	const int fps = 13;
 	static const size_t n_frames = 141;
 	const size_t start_loop = 119; // mulai loop sampe pemain mulai game
@@ -152,6 +179,39 @@ private:
 
 	raylib::Texture2D intro_animation[n_frames];
 
+	static const size_t n_letters = 7;
+	const char* letters[n_letters] = {
+		"assets/title_S.png",
+		"assets/title_N.png",
+		"assets/title_A.png",
+		"assets/title_P1.png",
+		"assets/title_P2.png",
+		"assets/title_L.png",
+		"assets/title_E.png"
+	};
+
+	const int ground_y[n_letters] = {
+		56,
+		171,
+		81,
+		140,
+		178,
+		108,
+		112
+	};
+
+	const int x_pos[n_letters] = {
+		274,
+		523,
+		735,
+		953,
+		1077,
+		1214,
+		1370
+	};
+
+	LetterSprite letter_sprites[n_letters];
+
 	const char* background_filename = "assets/background.png";
 	raylib::Texture2D background;
 	double time_per_fps;
@@ -160,8 +220,15 @@ private:
 
 	bool is_looping;
 
+	uint8_t hint_text_alpha;
+	double hint_text_last_time;
+	const double hint_text_blink_duration = 1.0;
+
+	raylib::Font* game_font;
+
 public:
 	IntroScene();
+	void set_font(raylib::Font* game_font);
 	void draw();
 	void update();
 };
