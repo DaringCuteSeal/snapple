@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <raylib.h>
 #include "../src/backend/components.hpp"
 
 using namespace GameComponents;
@@ -25,6 +26,20 @@ TEST(Components, TimerUpdate) {
 	EXPECT_EQ(timer.timers[2].expire, 13.0);
 	EXPECT_EQ(timer.timers[3].expire, 14.0);
 	EXPECT_EQ(timer.timers[4].expire, 15.0);
+}
+
+TEST(Raylib, Random1) {
+	bool value = GetRandomValue(0, 0);
+	bool value2 = GetRandomValue(1, 1);
+
+	EXPECT_EQ(value, false);
+	EXPECT_EQ(value2, true);
+}
+
+TEST(Raylib, Random2) {
+	int negative = GetRandomValue(-10, 0);
+
+	EXPECT_TRUE(negative <= 0 && negative >= -10);
 }
 
 int main(int argc, char** argv) {

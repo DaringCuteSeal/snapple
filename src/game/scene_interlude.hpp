@@ -4,7 +4,7 @@
 class InterludeScene : public GameComponents::Scene {
 private:
 	const char* id = "interlude";
-	const int fps = 13;
+	const uint fps = 13;
 	static const size_t n_frames = 38;
 	size_t current_frame;
 	double last_time;

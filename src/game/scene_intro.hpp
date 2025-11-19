@@ -39,7 +39,7 @@ public:
 class IntroScene : public GameComponents::Scene {
 private:
 	const char* id = "intro";
-	const int fps = 13;
+	const uint fps = 13;
 	static const size_t n_frames = 141;
 	const size_t start_loop = 119; // mulai loop sampe pemain mulai game
 	const char* frames[n_frames] = {

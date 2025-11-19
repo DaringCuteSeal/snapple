@@ -28,7 +28,7 @@ void InterludeScene::update() {
 		this->current_frame += 1;
 		this->last_time = GetTime();
 		if (this->current_frame == this->n_frames - 1) {
-			this->game_state_manager->timer.attach(2, this->start_game_callback);
+			this->game_state_manager->timer.attach(2.5, this->start_game_callback);
 			this->is_ready_to_start_game = true;
 		}
 	}
