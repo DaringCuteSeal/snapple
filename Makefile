@@ -11,7 +11,7 @@ LDFLAGS = -lraylib
 TARGET = snapple
 
 # Define source files
-SRCS = src/backend/components.cpp src/game/game.cpp src/game/scene_intro.cpp src/game/scene_interlude.cpp src/main.cpp
+SRCS = src/backend/components.cpp src/game/game.cpp src/game/scene_intro.cpp src/game/scene_interlude.cpp src/game/scene_game.cpp src/main.cpp
 
 SRCS_TEST = src/backend/components.cpp tests/tests.cpp
 

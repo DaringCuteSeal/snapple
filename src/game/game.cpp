@@ -18,6 +18,7 @@ void Game::start_game_interlude() {
 }
 
 void Game::start_game() {
+	this->game_state_manager.scene_manager.set_scene(&this->game_scene);
 }
 
 Game::Game() : game_state_manager(&this->intro_scene) {
