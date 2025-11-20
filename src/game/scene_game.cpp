@@ -302,6 +302,10 @@ StatusBar::StatusBar() {
 	this->pos = {this->min_statusbar_pos_y, 0};
 }
 
+void StatusBar::fall() {
+	this->pos = {this->min_statusbar_pos_y, 0};
+}
+
 void StatusBar::init(raylib::Font* game_font) {
 	this->math.init(game_font);
 }
@@ -316,13 +320,18 @@ GameScene::GameScene() {
 
 }
 
-void GameScene::init(raylib::Font* game_font) {
+void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager) {
 	this->status_bar.init(game_font);
+	this->game_state_manager = game_state_manager;
 }
 
 void GameScene::update() {
 	if (!this->is_game_started) {
 		this->explosion_animation.update();
+		if (this->explosion_animation.ended()) {
+			this->is_game_started = true;
+		}
+		this->game_state_manager->timer.attach(1, [this](){this->status_bar.fall();});
 		return;
 	}
 }

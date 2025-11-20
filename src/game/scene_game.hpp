@@ -8,6 +8,14 @@
 
 using std::pair;
 
+// Arah
+enum Direction {
+	UP,
+	DOWN,
+	LEFT,
+	RIGHT
+};
+
 // Koordinat (dalam tile, bukan piksel)
 struct TileCoord {
 	int row;
@@ -164,15 +172,22 @@ public:
 	void init(raylib::Font* game_font);
 	void draw();
 	void update();
+	void fall();
 };
 
 class Player {
 private:
+	// Radius ular
+	const size_t snake_radius = TILE_DIMENSION / 3;
+
 	// Titik-titik yang menjadi tubuh ular pengguna.
 	vector<Vector2> points;
 
-	// Posisi titik-titik (koordinat tile, bukan dalam piksel).
-	vector<TileCoord> pos;
+	// Arah-arah dari tiap titik. Sebenarnya gak terlalu berguna untuk
+	// titik-titik tengah tapi untuk arah ekor berguna.
+	vector<Direction> directions;
+
+	Direction current_direction;
 public:
 	void update();
 	void draw();
@@ -186,10 +201,11 @@ private:
 	StatusBar status_bar;
 	PlayerStats player_stats;
 	raylib::Font* game_font;
+	GameComponents::GameStateManager* game_state_manager;
 
 public:
 	GameScene();
-	void init(raylib::Font* game_font);
+	void init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager);
 	void draw();
 	void update();
 };
