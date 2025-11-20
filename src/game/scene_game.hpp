@@ -97,7 +97,7 @@ struct MathQuestion {
  */
 class MathQuestionDisplay {
 private:
-	// dalam persen
+	// di bawah ini dalam persen semua
 	const uint probability_addsubtr_easy = 30;
 	const uint probability_addsubtr_hard = 30;
 	const uint probability_multdiv_easy = 10;
