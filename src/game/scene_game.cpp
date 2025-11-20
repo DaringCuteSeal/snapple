@@ -59,11 +59,12 @@ void PlayerStats::draw_lives(int x, int y) {
 	}
 }
 
-MathQuestionDisplay::MathQuestionDisplay(raylib::Font* game_font) {
+MathQuestionDisplay::MathQuestionDisplay() {
 	// Generate question langsung biar gak ada masalah null pointer kalo
 	// `this->get_question()` dipanggil.
 	this->generate_new_question();
-
+}
+void MathQuestionDisplay::init(raylib::Font* game_font) {
 	this->game_font = game_font;
 }
 
@@ -297,8 +298,12 @@ void MathQuestionDisplay::draw_answers() {
 	}
 }
 
-StatusBar::StatusBar(raylib::Font* game_font) : math(game_font) {
+StatusBar::StatusBar() {
 	this->pos = {this->min_statusbar_pos_y, 0};
+}
+
+void StatusBar::init(raylib::Font* game_font) {
+	this->math.init(game_font);
 }
 
 void StatusBar::draw() {
@@ -307,8 +312,12 @@ void StatusBar::draw() {
 	this->math.draw_bar_item(this->pos.col + this->question_pos.col, this->pos.row + this->question_pos.row);
 }
 
-GameScene::GameScene(raylib::Font* game_font) : status_bar(game_font) {
+GameScene::GameScene() {
 
+}
+
+void GameScene::init(raylib::Font* game_font) {
+	this->status_bar.init(game_font);
 }
 
 void GameScene::update() {

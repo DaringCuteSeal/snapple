@@ -117,7 +117,8 @@ private:
 	raylib::Font* game_font;
 
 public:
-	MathQuestionDisplay(raylib::Font* game_font);
+	MathQuestionDisplay();
+	void init(raylib::Font* game_font);
 
 	// Generate sebuah pertanyaan dan simpan ke state `this->q_now`.
 	void generate_new_question();
@@ -159,7 +160,8 @@ private:
 	raylib::Texture2D texture;
 
 public:
-	StatusBar(raylib::Font* game_font);
+	StatusBar();
+	void init(raylib::Font* game_font);
 	void draw();
 	void update();
 };
@@ -186,7 +188,8 @@ private:
 	raylib::Font* game_font;
 
 public:
-	GameScene(raylib::Font* game_font);
+	GameScene();
+	void init(raylib::Font* game_font);
 	void draw();
 	void update();
 };
