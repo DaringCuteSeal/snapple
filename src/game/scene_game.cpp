@@ -1,5 +1,8 @@
 #include "scene_game.hpp"
 #include <raylib.h>
+#include <string>
+
+using std::to_string;
 
 TileCoord get_random_tile_coord() {
 	return TileCoord {
@@ -85,7 +88,7 @@ void MathQuestionDisplay::generate_new_question() {
 		// kalau ini false, jadi pengurangan.
 		bool add = get_random_bool();
 
-		this->q_now.display = lhs + (add ? " + " : " - ") + rhs;
+		this->q_now.display = to_string(lhs) + (add ? " + " : " - ") + to_string(rhs);
 		this->q_now.answers[0] = {get_random_tile_coord(), add ? (lhs+rhs) : (lhs-rhs)};
 		this->q_now.answers[1] = {get_random_tile_coord(), add ? (lhs+rhs + margin1) : (lhs-rhs + margin1)};
 		this->q_now.answers[2] = {get_random_tile_coord(), add ? (lhs+rhs + margin2) : (lhs-rhs + margin2)};
@@ -106,7 +109,7 @@ void MathQuestionDisplay::generate_new_question() {
 		int diff_tens = 10 * GetRandomValue(-2, 2);
 		diff_tens = diff_tens == 0 ? 10 : diff_tens; // kalo tadi dapet 0 kita paksa jadi 10 aja. jadi agak biased tapi gapapa
 
-		this->q_now.display = lhs + (add ? " + " : " - ") + rhs;
+		this->q_now.display = to_string(lhs) + (add ? " + " : " - ") + to_string(rhs);
 		this->q_now.answers[0] = {get_random_tile_coord(), add ? (lhs+rhs) : (lhs-rhs)};
 		this->q_now.answers[1] = {get_random_tile_coord(), add ? (lhs+rhs + diff_tens) : (lhs-rhs + diff_tens)};
 
@@ -130,10 +133,16 @@ void MathQuestionDisplay::generate_new_question() {
 			int rhs = lhs;
 		}
 
-		this->q_now.display = lhs + (mult ? " × " : " ÷ ") + rhs;
+		this->q_now.display = to_string(lhs) + (mult ? " × " : " ÷ ") + to_string(rhs);
 		this->q_now.answers[0] = {get_random_tile_coord(), mult ? (lhs*rhs) : (lhs/rhs)};
 
-		// opsi ke-2: off by 1 untuk salah satu lengan (kalau perkalian)
+		// opsi ke-2: shift by margin
+		int margin = GetRandomValue(1, 10);
+		if (get_random_bool()) margin = -margin; // flip
+
+		this->q_now.answers[1] = {get_random_tile_coord(), mult ? (lhs*rhs + margin) : (lhs/rhs + margin)};
+
+		// opsi ke-3: off by 1 untuk salah satu lengan (kalau perkalian)
 		// kalau pembagian yang kita off-by-one itu hasilnya aja, bukan lhs/rhs.
 		if (mult) {
 			if (get_random_bool()) {
@@ -143,25 +152,104 @@ void MathQuestionDisplay::generate_new_question() {
 				// lengan kanan
 				rhs += get_random_bool() ? 1 : -1;
 			}
-			this->q_now.answers[1] = {get_random_tile_coord(), lhs*rhs};
+			this->q_now.answers[2] = {get_random_tile_coord(), lhs*rhs};
 		} else {
 			int margin = get_random_bool() ? 1 : -1;
-			this->q_now.answers[1] = {get_random_tile_coord(), lhs/rhs + margin};
+			this->q_now.answers[2] = {get_random_tile_coord(), lhs/rhs + margin};
 		}
-		
-		// opsi ke-3: 
-
-		this->q_now.answers[2] = {get_random_tile_coord(), add ? (lhs+rhs + margin2) : (lhs-rhs + margin2)};
 
 	} else if (random <= multdiv_hard) {
+		// 20 sampai 50 buat yang gampang.
+		int lhs = GetRandomValue(20, 50);
+		if (get_random_bool()) lhs = -lhs;
+		// rhs nya jangan gede gede tapi.
+		int rhs = GetRandomValue(10, 30);
+		if (get_random_bool()) rhs = -rhs;
+
+		// kalau ini false, jadi pembagian.
+		bool mult = get_random_bool();
+
+		// kalau pembagian, buat menghindari pecahan, kita balik persamaannya.
+		// tadi itu lhs × rhs = c, sekarang kita lakukan c ÷ lhs = rhs misalnya.
+		if (!mult) {
+			int tmp = lhs*rhs; // c
+			int lhs = tmp;
+			int rhs = lhs;
+		}
+
+		this->q_now.display = to_string(lhs) + (mult ? " × " : " ÷ ") + to_string(rhs);
+		this->q_now.answers[0] = {get_random_tile_coord(), mult ? (lhs*rhs) : (lhs/rhs)};
+
+		// opsi ke-2: shift by margin (tens)
+		int margin = 10 * GetRandomValue(1, 3);
+		if (get_random_bool()) margin = -margin; // flip
+
+		this->q_now.answers[1] = {get_random_tile_coord(), mult ? (lhs*rhs + margin) : (lhs/rhs + margin)};
+
+		// opsi ke-3: off by 1 untuk salah satu lengan (kalau perkalian)
+		// kalau pembagian yang kita off-by-one itu hasilnya aja, bukan lhs/rhs.
+		if (mult) {
+			if (get_random_bool()) {
+				// lengan kiri
+				lhs += get_random_bool() ? 1 : -1;
+			} else {
+				// lengan kanan
+				rhs += get_random_bool() ? 1 : -1;
+			}
+			this->q_now.answers[2] = {get_random_tile_coord(), lhs*rhs};
+		} else {
+			int margin = get_random_bool() ? 1 : -1;
+			this->q_now.answers[2] = {get_random_tile_coord(), lhs/rhs + margin};
+		}
 		
 	} else if (random <= powerssqrt_easy) {
+		int num = GetRandomValue(2, 20);
+
+		// opsi 2: margin hasil (tens)
+		int margin1 = 10 * GetRandomValue(1, 2);
+		if (get_random_bool()) margin1 = -margin1;
+
+		// opsi 3: margin input
+		int margin2 = GetRandomValue(1, 2);
+		if (get_random_bool()) margin2 = -margin2;
+
+		// kalau ini false, jadi akar pangkat 2.
+		bool power = get_random_bool();
+
+		// kita balik kayak di perkalian pembagian
+		if (!power) {
+			int num = pow(num, 2);
+		}
+
+		this->q_now.display = power ? to_string(num) + "²" : "√" + to_string(num);
+		this->q_now.answers[0] = {get_random_tile_coord(), power ? (pow(num, 2)) : sqrt(num)};
+		this->q_now.answers[1] = {get_random_tile_coord(), power ? (pow(num, 2) + margin1) : (sqrt(num) + margin1)};
+		this->q_now.answers[2] = {get_random_tile_coord(), power ? (pow(num + margin2, 2)) : (sqrt(num + margin2))};
 
 	} else if (random <= powerssqrt_hard) {
+		int num = GetRandomValue(30, 50);
 
+		// opsi 2: margin hasil (tens)
+		int margin1 = 10 * GetRandomValue(1, 2);
+		if (get_random_bool()) margin1 = -margin1;
+
+		// opsi 3: margin input
+		int margin2 = GetRandomValue(1, 2);
+		if (get_random_bool()) margin2 = -margin2;
+
+		// kalau ini false, jadi akar pangkat 2.
+		bool power = get_random_bool();
+
+		// kita balik kayak di perkalian pembagian
+		if (!power) {
+			int num = pow(num, 2);
+		}
+
+		this->q_now.display = power ? to_string(num) + "²" : "√" + to_string(num);
+		this->q_now.answers[0] = {get_random_tile_coord(), power ? (pow(num, 2)) : sqrt(num)};
+		this->q_now.answers[1] = {get_random_tile_coord(), power ? (pow(num, 2) + margin1) : (sqrt(num) + margin1)};
+		this->q_now.answers[2] = {get_random_tile_coord(), power ? (pow(num + margin2, 2)) : (sqrt(num + margin2))};
 	}
-
-
 }
 
 StatusBar::StatusBar() {
