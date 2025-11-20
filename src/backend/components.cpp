@@ -103,3 +103,15 @@ void GameStateManager::update() {
 void GameStateManager::draw() {
 	this->scene_manager.draw();
 }
+
+Coordinate Coordinate::operator +(const Coordinate& other) const {
+	return Coordinate { this->col + other.col, this->row + other.row };
+}
+
+Coordinate Coordinate::add_row(int r) {
+	return Coordinate { this->row + r, this->col };
+};
+
+Coordinate Coordinate::add_col(int c) {
+	return Coordinate { this->row, this->col + c };
+};

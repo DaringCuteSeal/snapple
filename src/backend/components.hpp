@@ -158,8 +158,12 @@ public:
 /** Representing a coordinate.
 */
 struct Coordinate {
-	int row;
-	int col;
+  int row;
+  int col;
+
+  Coordinate operator +(const Coordinate& other) const;
+  Coordinate add_row(int r);
+  Coordinate add_col(int c);
 };
 
 }

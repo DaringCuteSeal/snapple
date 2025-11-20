@@ -42,6 +42,13 @@ TEST(Raylib, Random2) {
 	EXPECT_TRUE(negative <= 0 && negative >= -10);
 }
 
+TEST(STL, StringCmp) {
+	string a = "abc";
+	string b = "abc";
+	EXPECT_EQ(a, b);
+
+}
+
 int main(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();

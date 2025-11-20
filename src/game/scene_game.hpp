@@ -13,8 +13,8 @@ struct TileCoord {
 	int row;
 	int col;
 
-	int row_pixels();
-	int col_pixels();
+	GameComponents::Coordinate to_coord();
+	GameComponents::Coordinate to_coord_center();
 };
 
 class AppleExplosion {
@@ -76,7 +76,6 @@ public:
 	long long score = 0;
 
 	void draw_lives(int x, int y);
-	void update();
 };
 
 struct MathQuestion {
@@ -87,9 +86,15 @@ struct MathQuestion {
 
 	// Jawaban-jawaban pertanyaan.
 	// Untuk memudahkan, jawaban benarnya ada di answers[0]. Semua jawaban
-	// di sini berbeda (harus digaransikan ketika generasi pertanyaan). Array ini
+	// di sini berbeda (harus digaransikan ketika generasi pertanyaan).
+	long long answers[3];
+
+	// Array ini
 	// menyimpan koordinat jawabannya juga (untuk digunakan ketika render).
-	pair<TileCoord, long long> answers[3];
+	GameComponents::Coordinate coords[3];
+
+	// Jawaban (dalam string; untuk display);
+	string answers_str[3];
 };
 
 /** Kelas yang mengatur display matematika. Ada bagian untuk widget di bar dan
@@ -109,9 +114,10 @@ private:
 	MathQuestion q_now;
 	const Color bar_color = ORANGE;
 	const Color food_color = WHITE;
+	raylib::Font* game_font;
 
 public:
-	MathQuestionDisplay();
+	MathQuestionDisplay(raylib::Font* game_font);
 
 	// Generate sebuah pertanyaan dan simpan ke state `this->q_now`.
 	void generate_new_question();
@@ -119,7 +125,7 @@ public:
 	// Dapatkan pointer ke array 3 jawaban yang memungkinkan.
 	// Digunakan untuk collision checking.
 	MathQuestion* get_question();
-	void draw_bar_item();
+	void draw_bar_item(int x, int y);
 	void draw_answers();
 };
 
@@ -133,6 +139,9 @@ private:
 
 	// Statistik pengguna.
 	PlayerStats stats;
+
+	// Math engine
+	MathQuestionDisplay math;
 
 	// Posisi untuk menyembunyikan statusbar.
 	const int min_statusbar_pos_y = -80;
@@ -150,7 +159,7 @@ private:
 	raylib::Texture2D texture;
 
 public:
-	StatusBar();
+	StatusBar(raylib::Font* game_font);
 	void draw();
 	void update();
 };
@@ -174,11 +183,10 @@ private:
 	bool is_game_started = false;
 	StatusBar status_bar;
 	PlayerStats player_stats;
-	MathQuestionDisplay math;
-
+	raylib::Font* game_font;
 
 public:
-	GameScene();
+	GameScene(raylib::Font* game_font);
 	void draw();
 	void update();
 };
