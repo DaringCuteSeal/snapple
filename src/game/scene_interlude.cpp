@@ -14,7 +14,6 @@ InterludeScene::InterludeScene() {
 void InterludeScene::init(GameComponents::GameStateManager* game_state_manager, function<void()> start_game_callback){
 	this->game_state_manager = game_state_manager;
 	this->start_game_callback = start_game_callback;
-
 }
 
 void InterludeScene::draw() {

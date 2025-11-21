@@ -57,6 +57,10 @@ PlayerStats::PlayerStats()  {
 	this->heart_texture.Load(this->heart_texture_file);
 }
 
+void PlayerStats::init (raylib::Font* game_font)  {
+	this->game_font = game_font;
+}
+
 void PlayerStats::draw_lives(int x, int y) {
 	int x_draw = x;
 	for (size_t i = 0; i < this->lives; i++){
@@ -64,6 +68,15 @@ void PlayerStats::draw_lives(int x, int y) {
 		this->heart_texture.Draw(x_draw, y);
 	}
 }
+
+void PlayerStats::draw_length(int x, int y) {
+	DrawTextEx(*(this->game_font), "Length: " + to_string(this->length), raylib::Vector2(x, y), 50, 1.0, this->text_color);
+}
+
+void PlayerStats::draw_pts(int x, int y) {
+	DrawTextEx(*(this->game_font), "Pts: " + to_string(this->pts), raylib::Vector2(x, y), 50, 1.0, this->text_color);
+}
+
 
 MathQuestionDisplay::MathQuestionDisplay() {
 	// Generate question langsung biar gak ada masalah null pointer kalo
@@ -74,6 +87,7 @@ void MathQuestionDisplay::init(raylib::Font* game_font) {
 	this->game_font = game_font;
 }
 
+// Generate pertanyaan matematika baru.
 void MathQuestionDisplay::generate_new_question() {
 	int random = GetRandomValue(1, 100);
 	int addsubtr_easy = this->probability_addsubtr_easy;
@@ -94,7 +108,7 @@ void MathQuestionDisplay::generate_new_question() {
 	// TODO: extract jadi bbrp methods lain kalo sempet
 	if (random <= addsubtr_easy) {
 		int lhs = GetRandomValue(0, 15);
-		int rhs = GetRandomValue(0, 15);
+		int rhs = GetRandomValue(0, 16);
 
 		// Yang gampang pakai margin aja.
 		int margin1 = GetRandomValue(1, 3);
@@ -103,19 +117,19 @@ void MathQuestionDisplay::generate_new_question() {
 		// kalau ini false, jadi pengurangan.
 		bool add = get_random_bool();
 
-		this->q_now.display = to_string(lhs) + (add ? " + " : " - ") + to_string(rhs);
+		this->q_now.display = to_string(lhs) + (add ? " + " : " - ") + to_string(rhs) + " = ?";
 		this->q_now.answers[0] = add ? (lhs+rhs) : (lhs-rhs);
 		this->q_now.answers[1] = add ? (lhs+rhs + margin1) : (lhs-rhs + margin1);
 		this->q_now.answers[2] = add ? (lhs+rhs + margin2) : (lhs-rhs + margin2);
 
 	} else if (random <= addsubtr_hard) {
-		int lhs_tens = 10 * GetRandomValue(0, 5);
-		int lhs_ones = GetRandomValue(0, 9);
-		int lhs  = lhs_tens + lhs_ones;
+		int lhs_tens = 10 * GetRandomValue(0, 6);
+		int lhs_ones = GetRandomValue(0, 8);
+		int lhs = lhs_tens + lhs_ones;
 
 		int rhs_tens = 10 * GetRandomValue(0, 5);
 		int rhs_ones = GetRandomValue(0, 9);
-		int rhs  = lhs_tens + lhs_ones;
+		int rhs = rhs_tens + rhs_ones;
 
 		// kalau ini false, jadi pengurangan.
 		bool add = GetRandomValue(0, 1);
@@ -124,7 +138,7 @@ void MathQuestionDisplay::generate_new_question() {
 		int diff_tens = 10 * GetRandomValue(-2, 2);
 		diff_tens = diff_tens == 0 ? 10 : diff_tens; // kalo tadi dapet 0 kita paksa jadi 10 aja. jadi agak biased tapi gapapa
 
-		this->q_now.display = to_string(lhs) + (add ? " + " : " - ") + to_string(rhs);
+		this->q_now.display = to_string(lhs) + (add ? " + " : " - ") + to_string(rhs) + " = ?";
 		this->q_now.answers[0] = add ? (lhs+rhs) : (lhs-rhs);
 		this->q_now.answers[1] = add ? (lhs+rhs + diff_tens) : (lhs-rhs + diff_tens);
 
@@ -135,7 +149,7 @@ void MathQuestionDisplay::generate_new_question() {
 	} else if (random <= multdiv_easy) {
 		// 1 sampai 10 buat yang gampang.
 		int lhs = GetRandomValue(-10, 10);
-		int rhs = GetRandomValue(-10, 10);
+		int rhs = GetRandomValue(-11, 10);
 
 		// kalau ini false, jadi pembagian.
 		bool mult = get_random_bool();
@@ -148,7 +162,7 @@ void MathQuestionDisplay::generate_new_question() {
 			rhs = lhs;
 		}
 
-		this->q_now.display = to_string(lhs) + (mult ? " × " : " ÷ ") + to_string(rhs);
+		this->q_now.display = to_string(lhs) + (mult ? " x " : " / ") + to_string(rhs) + " = ?";
 		this->q_now.answers[0] = mult ? (lhs*rhs) : (lhs/rhs);
 
 		// opsi ke-2: shift by margin
@@ -192,7 +206,7 @@ void MathQuestionDisplay::generate_new_question() {
 			rhs = lhs;
 		}
 
-		this->q_now.display = to_string(lhs) + (mult ? " × " : " ÷ ") + to_string(rhs);
+		this->q_now.display = to_string(lhs) + (mult ? " x " : " / ") + to_string(rhs) + " = ?";
 		this->q_now.answers[0] = mult ? (lhs*rhs) : (lhs/rhs);
 
 		// opsi ke-2: shift by margin (tens)
@@ -236,7 +250,7 @@ void MathQuestionDisplay::generate_new_question() {
 			num = pow(num, 2);
 		}
 
-		this->q_now.display = power ? to_string(num) + "²" : "√" + to_string(num);
+		this->q_now.display = power ? to_string(num) + "^2" : "sqrt " + to_string(num) + " = ?";
 		this->q_now.answers[0] = power ? (pow(num, 2)) : sqrt(num);
 		this->q_now.answers[1] = power ? (pow(num, 2) + margin1) : (sqrt(num) + margin1);
 		this->q_now.answers[2] = power ? (pow(num + margin2, 2)) : (sqrt(num + margin2));
@@ -260,7 +274,7 @@ void MathQuestionDisplay::generate_new_question() {
 			num = pow(num, 2);
 		}
 
-		this->q_now.display = power ? to_string(num) + "²" : "√" + to_string(num);
+		this->q_now.display = power ? to_string(num) + "^2" : "sqrt " + to_string(num) + " = ?";
 		this->q_now.answers[0] = power ? (pow(num, 2)) : sqrt(num);
 		this->q_now.answers[1] = power ? (pow(num, 2) + margin1) : (sqrt(num) + margin1);
 		this->q_now.answers[2] = power ? (pow(num + margin2, 2)) : (sqrt(num + margin2));
@@ -290,7 +304,7 @@ MathQuestion* MathQuestionDisplay::get_question() {
 }
 
 void MathQuestionDisplay::draw_bar_item(int x, int y) {
-	DrawTextEx(*(this->game_font), this->q_now.display, raylib::Vector2(x, y), 60, 1.0, this->bar_color);
+	DrawTextEx(*(this->game_font), this->q_now.display, raylib::Vector2(x, y), 50, 1.0, this->bar_color);
 
 }
 
@@ -304,20 +318,32 @@ void MathQuestionDisplay::draw_answers() {
 
 StatusBar::StatusBar() {
 	this->pos = {this->min_statusbar_pos_y, 0};
+	this->texture.Load(this->texture_file);
 }
 
 void StatusBar::fall() {
+	this->is_falling = true;
 	this->pos = {this->min_statusbar_pos_y, 0};
 }
 
 void StatusBar::init(raylib::Font* game_font) {
 	this->math.init(game_font);
+	this->stats.init(game_font);
 }
 
 void StatusBar::draw() {
-	this->texture.Draw();
+	this->texture.Draw(this->pos.col, this->pos.row);
 	this->stats.draw_lives(this->pos.col + this->lives_pos.col, this->pos.row + this->lives_pos.row);
+	this->stats.draw_pts(this->pos.col + this->pts_pos.col, this->pos.row + this->pts_pos.row);
+	this->stats.draw_length(this->pos.col + this->snake_length_pos.col, this->pos.row + this->snake_length_pos.row);
 	this->math.draw_bar_item(this->pos.col + this->question_pos.col, this->pos.row + this->question_pos.row);
+}
+
+void StatusBar::update() {
+	if (this->is_falling){
+		if (this->pos.row >= this->pos_y) this->is_falling = false;
+		this->pos.row += this->vy;
+	}
 }
 
 GameScene::GameScene() {
@@ -338,6 +364,8 @@ void GameScene::update() {
 			explosion_animation.update();
 			this->game_state_manager->timer.attach(1, [this](){this->status_bar.fall();});
 		}
+	} else {
+		this->status_bar.update();
 	}
 }
 
@@ -350,8 +378,8 @@ void GameScene::draw() {
 		this->explosion_animation.draw();
 	} else {
 		this->ground_texture.Draw(0, 0);
+		this->status_bar.draw();
 	}
-	this->status_bar.draw();
 }
 
 Player::Player() {

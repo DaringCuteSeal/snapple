@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <optional>
 
+#define SNAKE_INITIAL_LENGTH 6
 #define TILE_ROWS 17
 #define TILE_COLUMNS 32
 #define TILE_DIMENSION 60 // sisi segiempat, dalam piksel
@@ -69,12 +70,14 @@ public:
 
 class PlayerStats {
 private:
-	const int hearts_gaps = 15;
+	const int hearts_gaps = TILE_DIMENSION + 15;
+	const Color text_color = WHITE;
 
 	const char* heart_texture_file = "assets/heart.png";
 	raylib::Texture2D heart_texture;
 public:
 	PlayerStats();
+	raylib::Font* game_font;
 
 	// Sisa nyawa pemain.
 	uint8_t lives = 3;
@@ -82,12 +85,15 @@ public:
 	// TODO: atau ini harusnya ga variabel sendiri, biar kita bisa
 	// player_segments.length() gitu? tapi kayaknya gak optimal kalau gitu karena
 	// variabel ini dibaca setiap update() scene.
-	uint length = 3;
+	uint length = SNAKE_INITIAL_LENGTH; // termasuk kepala
 
 	// Skor pemain.
-	long long score = 0;
+	long long pts = 0;
 
+	void init(raylib::Font* game_font);
 	void draw_lives(int x, int y);
+	void draw_pts(int x, int y);
+	void draw_length(int x, int y);
 };
 
 struct MathQuestion {
@@ -145,10 +151,10 @@ public:
 class StatusBar {
 private:
 	// Koordinat komponen-komponen (relatif dengan `this->pos`).
-	const GameComponents::Coordinate lives_pos = {20, 20};
-	const GameComponents::Coordinate pts_pos = {20, 280};
-	const GameComponents::Coordinate question_pos = {20, 815};
-	const GameComponents::Coordinate snake_length_pos = {20, 1551};
+	const GameComponents::Coordinate lives_pos = {10, 0};
+	const GameComponents::Coordinate pts_pos = {3, 330};
+	const GameComponents::Coordinate question_pos = {3, 815};
+	const GameComponents::Coordinate snake_length_pos = {3, 1400};
 
 	// Statistik pengguna.
 	PlayerStats stats;
@@ -160,16 +166,17 @@ private:
 	const int min_statusbar_pos_y = -80;
 
 	// Posisi seharusnya
-	const int pos_y = 0;
+	const int pos_y = -5;
 
-	double vy;
-	const double a = -0.8;
-	
+	const int vy = 3;
 
 	// Posisi statusbar.
 	GameComponents::Coordinate pos = {0, 0};
 
+	const char* texture_file = "assets/statusbar.png";
 	raylib::Texture2D texture;
+
+	bool is_falling = false;
 
 public:
 	StatusBar();
