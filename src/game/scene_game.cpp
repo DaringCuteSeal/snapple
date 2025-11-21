@@ -158,8 +158,8 @@ void MathQuestionDisplay::generate_new_question() {
 		// tadi itu lhs × rhs = c, sekarang kita lakukan c ÷ lhs = rhs misalnya.
 		if (!mult) {
 			int tmp = lhs*rhs; // c
-			lhs = tmp;
 			rhs = lhs;
+			lhs = tmp;
 		}
 
 		this->q_now.display = to_string(lhs) + (mult ? " x " : " / ") + to_string(rhs) + " = ?";
@@ -202,8 +202,8 @@ void MathQuestionDisplay::generate_new_question() {
 		// tadi itu lhs × rhs = c, sekarang kita lakukan c ÷ lhs = rhs misalnya.
 		if (!mult) {
 			int tmp = lhs*rhs; // c
-			lhs = tmp;
 			rhs = lhs;
+			lhs = tmp;
 		}
 
 		this->q_now.display = to_string(lhs) + (mult ? " x " : " / ") + to_string(rhs) + " = ?";
@@ -280,23 +280,38 @@ void MathQuestionDisplay::generate_new_question() {
 		this->q_now.answers[2] = power ? (pow(num + margin2, 2)) : (sqrt(num + margin2));
 	}
 
-	for (size_t i = 0; i < 2; i++) {
+	// Ubah ke string
+	for (size_t i = 0; i < 3; i++) {
 		this->q_now.answers_str[i] = to_string(this->q_now.answers[i]);
 	}
 
 	// Generate koordinat-koordinat
-	int offset_cols_1 = GetRandomValue(1, TILE_COLUMNS - 1);
-	int offset_rows_1 = GetRandomValue(1, TILE_COLUMNS - 1);
+	int offset_cols_1 = GetRandomValue(1, TILE_COLUMNS - 2);
+	int offset_rows_1 = GetRandomValue(1, TILE_ROWS - 2);
 
-	int offset_cols_2 = GetRandomValue(1, TILE_COLUMNS - 1);
+	int offset_cols_2 = GetRandomValue(1, TILE_COLUMNS - 2);
 	if (offset_cols_2 == offset_cols_1) offset_cols_2 += 3; // aga biased .. oklah im too lazy tho
-	int offset_rows_2 = GetRandomValue(1, TILE_COLUMNS - 1);
+	int offset_rows_2 = GetRandomValue(1, TILE_ROWS - 2);
 	if (offset_rows_2 == offset_rows_1) offset_rows_2 += 5; // aga biased .. oklah im too lazy tho
 
-	this->q_now.coords[0] = get_random_tile_coord().to_coord_center().add_col(TILE_DIMENSION);
-	this->q_now.coords[1] = q_now.coords[0] + GameComponents::Coordinate { offset_rows_1, offset_cols_1 };
-	this->q_now.coords[2] = q_now.coords[0] + GameComponents::Coordinate { offset_rows_2, offset_cols_2 };
+	this->q_now.coords[0] = TileCoord {
+		.row = GetRandomValue(1, TILE_ROWS - 1),
+		.col = GetRandomValue(1, TILE_COLUMNS - 1),
+	};
+	this->q_now.coords[1] = TileCoord { 
+		1 + ((q_now.coords[0].row + offset_rows_1*TILE_DIMENSION) % (TILE_ROWS-1)),
+		1 + ((q_now.coords[0].col + offset_cols_1*TILE_DIMENSION) % (TILE_COLUMNS-1))
+	};
 
+	this->q_now.coords[2] = TileCoord { 
+		1 + ((q_now.coords[0].row + offset_rows_2*TILE_DIMENSION) % (TILE_ROWS - 1)),
+		1 + ((q_now.coords[0].col + offset_cols_2*TILE_DIMENSION) % (TILE_COLUMNS - 1))
+	};
+
+	// Koordinat asli (dalam piksel)
+	for (size_t i = 0; i < 3; i++) {
+		this->q_now.coords_pixel[i] = q_now.coords[i].to_coord().add_row(15).add_col((60 - q_now.answers_str[i].length()*12)/2);
+	}
 }
 
 MathQuestion* MathQuestionDisplay::get_question() {
@@ -304,15 +319,17 @@ MathQuestion* MathQuestionDisplay::get_question() {
 }
 
 void MathQuestionDisplay::draw_bar_item(int x, int y) {
-	DrawTextEx(*(this->game_font), this->q_now.display, raylib::Vector2(x, y), 50, 1.0, this->bar_color);
+	DrawTextEx(*(this->game_font), this->q_now.display, raylib::Vector2(x, y), 60, 1.0, this->bar_color);
 
 }
 
 void MathQuestionDisplay::draw_answers() {
-	for (size_t i = 0; i < 2; i++) {
+	for (size_t i = 0; i < 3; i++) {
 		// TODO: mungkin pakai raylib::Vector2 langsung daripada struct kita
 		// sendiri hehe
-		DrawTextEx(*(this->game_font), this->q_now.answers_str[i], raylib::Vector2(this->q_now.coords[i].col, this->q_now.coords[i].row), 60, 1.0, this->food_color);
+		DrawTextEx(*(this->game_font), this->q_now.answers_str[i], raylib::Vector2(this->q_now.coords_pixel[i].col, this->q_now.coords_pixel[i].row), 30, 1.0, this->food_color);
+		std::cout<<i << " "<<this->q_now.coords[i].col << "  r: " << this->q_now.coords[i].row << "AA ";
+		std::cout<<i << " "<<this->q_now.coords_pixel[i].col << "  r: " << this->q_now.coords_pixel[i].row << "\n";
 	}
 }
 
@@ -337,6 +354,7 @@ void StatusBar::draw() {
 	this->stats.draw_pts(this->pos.col + this->pts_pos.col, this->pos.row + this->pts_pos.row);
 	this->stats.draw_length(this->pos.col + this->snake_length_pos.col, this->pos.row + this->snake_length_pos.row);
 	this->math.draw_bar_item(this->pos.col + this->question_pos.col, this->pos.row + this->question_pos.row);
+	this->math.draw_answers();
 }
 
 void StatusBar::update() {
@@ -371,7 +389,6 @@ void GameScene::update() {
 
 void GameScene::draw() {
 	if (!this->is_game_started) {
-		std::cout<<this->explosion_animation.show_apple()<<"\n";
 		this->explosion_animation.show_apple()
 			? this->ground_texture_apple.Draw(0, 0)
 			: this->ground_texture.Draw();

@@ -107,9 +107,11 @@ struct MathQuestion {
 	// di sini berbeda (harus digaransikan ketika generasi pertanyaan).
 	long long answers[3];
 
-	// Array ini
-	// menyimpan koordinat jawabannya juga (untuk digunakan ketika render).
-	GameComponents::Coordinate coords[3];
+	// Tile tile jawaban.
+	TileCoord coords[3];
+
+	// Tile tile jawaban (dalam koordinat piksel).
+	GameComponents::Coordinate coords_pixel[3];
 
 	// Jawaban (dalam string; untuk display);
 	string answers_str[3];
@@ -183,6 +185,7 @@ public:
 	void init(raylib::Font* game_font);
 	void draw();
 	void update();
+	void draw_math_answers();
 	void fall();
 };
 
@@ -234,7 +237,7 @@ public:
 class GameScene : public GameComponents::Scene {
 private:
 	AppleExplosion explosion_animation;
-	const char* ground_texture_file = "assets/ground.png";
+	const char* ground_texture_file = "assets/ui.png";
 	const char* ground_texture_apple_file = "assets/interlude_animation/37.png";
 	raylib::Texture2D ground_texture_apple;
 	raylib::Texture2D ground_texture;
