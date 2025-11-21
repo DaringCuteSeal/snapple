@@ -26,13 +26,18 @@ bool get_random_bool() {
 
 AppleExplosion::AppleExplosion() {
 	for (size_t i = 0; i < this->n_frames; i++){
-		this->explosion_animation[i] = LoadTexture(this->frames[i]);
+		this->explosion_animation[i].Load(this->frames[i]);
 	}
 	this->last_time = GetTime();
 	this->time_per_frame = 1.0/this->fps;
 }
 
+bool AppleExplosion::show_apple() {
+	return this->current_frame <= this->frame_apple_disappear;
+}
+
 void AppleExplosion::draw() {
+	if (this->current_frame >= this->n_frames - 1) return;
 	this->explosion_animation[this->current_frame].Draw(this->pos.row, this->pos.col);
 }
 
@@ -44,11 +49,12 @@ void AppleExplosion::update() {
 	if (this->current_frame >= this->n_frames - 1) return;
 	if (GetTime() - last_time >= this->time_per_frame) {
 		this->current_frame += 1;
+		this->last_time = GetTime();
 	}
 }
 
 PlayerStats::PlayerStats()  {
-
+	this->heart_texture.Load(this->heart_texture_file);
 }
 
 void PlayerStats::draw_lives(int x, int y) {
@@ -138,8 +144,8 @@ void MathQuestionDisplay::generate_new_question() {
 		// tadi itu lhs × rhs = c, sekarang kita lakukan c ÷ lhs = rhs misalnya.
 		if (!mult) {
 			int tmp = lhs*rhs; // c
-			int lhs = tmp;
-			int rhs = lhs;
+			lhs = tmp;
+			rhs = lhs;
 		}
 
 		this->q_now.display = to_string(lhs) + (mult ? " × " : " ÷ ") + to_string(rhs);
@@ -182,8 +188,8 @@ void MathQuestionDisplay::generate_new_question() {
 		// tadi itu lhs × rhs = c, sekarang kita lakukan c ÷ lhs = rhs misalnya.
 		if (!mult) {
 			int tmp = lhs*rhs; // c
-			int lhs = tmp;
-			int rhs = lhs;
+			lhs = tmp;
+			rhs = lhs;
 		}
 
 		this->q_now.display = to_string(lhs) + (mult ? " × " : " ÷ ") + to_string(rhs);
@@ -227,7 +233,7 @@ void MathQuestionDisplay::generate_new_question() {
 
 		// kita balik kayak di perkalian pembagian
 		if (!power) {
-			int num = pow(num, 2);
+			num = pow(num, 2);
 		}
 
 		this->q_now.display = power ? to_string(num) + "²" : "√" + to_string(num);
@@ -251,7 +257,7 @@ void MathQuestionDisplay::generate_new_question() {
 
 		// kita balik kayak di perkalian pembagian
 		if (!power) {
-			int num = pow(num, 2);
+			num = pow(num, 2);
 		}
 
 		this->q_now.display = power ? to_string(num) + "²" : "√" + to_string(num);
@@ -272,8 +278,6 @@ void MathQuestionDisplay::generate_new_question() {
 	if (offset_cols_2 == offset_cols_1) offset_cols_2 += 3; // aga biased .. oklah im too lazy tho
 	int offset_rows_2 = GetRandomValue(1, TILE_COLUMNS - 1);
 	if (offset_rows_2 == offset_rows_1) offset_rows_2 += 5; // aga biased .. oklah im too lazy tho
-
-	GameComponents::Coordinate coords[3];
 
 	this->q_now.coords[0] = get_random_tile_coord().to_coord_center().add_col(TILE_DIMENSION);
 	this->q_now.coords[1] = q_now.coords[0] + GameComponents::Coordinate { offset_rows_1, offset_cols_1 };
@@ -317,7 +321,8 @@ void StatusBar::draw() {
 }
 
 GameScene::GameScene() {
-
+	this->ground_texture_apple.Load(this->ground_texture_apple_file);
+	this->ground_texture.Load(this->ground_texture_file);
 }
 
 void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager) {
@@ -330,17 +335,28 @@ void GameScene::update() {
 		this->explosion_animation.update();
 		if (this->explosion_animation.ended()) {
 			this->is_game_started = true;
+			explosion_animation.update();
+			this->game_state_manager->timer.attach(1, [this](){this->status_bar.fall();});
 		}
-		this->game_state_manager->timer.attach(1, [this](){this->status_bar.fall();});
-		return;
 	}
 }
 
 void GameScene::draw() {
 	if (!this->is_game_started) {
+		std::cout<<this->explosion_animation.show_apple()<<"\n";
+		this->explosion_animation.show_apple()
+			? this->ground_texture_apple.Draw(0, 0)
+			: this->ground_texture.Draw();
 		this->explosion_animation.draw();
-		return;
+	} else {
+		this->ground_texture.Draw(0, 0);
 	}
-	this->ground_texture.Draw(0, 0);
 	this->status_bar.draw();
+}
+
+Player::Player() {
+	this->snake_head_u.Load(this->texture_snake_head_u);
+	this->snake_head_l.Load(this->texture_snake_head_l);
+	this->snake_head_d.Load(this->texture_snake_head_d);
+	this->snake_head_r.Load(this->texture_snake_head_r);
 }

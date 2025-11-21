@@ -5,7 +5,7 @@
 IntroScene::IntroScene() {
 	// Load semua frame animasi ke memori
 	for (size_t i = 0; i < this->n_frames; i++) {
-		this->intro_animation[i] = LoadTexture(this->frames[i]);
+		this->intro_animation[i].Load(this->frames[i]);
 	}
 	this->time_per_frame = 1.0/this->fps;
 	this->last_time = GetTime();
@@ -13,7 +13,7 @@ IntroScene::IntroScene() {
 	this->is_looping = false;
 	this->ready_to_start_game = false;
 
-	this->background = LoadTexture(this->background_filename);
+	this->background.Load(this->background_filename);
 	this->show_hint_text = false;
 	this->hint_text_alpha = 0;
 	this->active = true;
@@ -139,7 +139,7 @@ LetterSprite::LetterSprite() {
 }
 
 void LetterSprite::load_texture(const char* letter_file_name) {
-	this->texture = LoadTexture(letter_file_name);
+	this->texture.Load(letter_file_name);
 }
 
 void LetterSprite::draw() {

@@ -6,9 +6,9 @@ InterludeScene::InterludeScene() {
 	this->is_ready_to_start_game = false;
 	this->last_time = GetTime();
 	for (size_t i = 0; i < this->n_frames; i++){
-		this->interlude_animation[i] = LoadTexture(this->frames[i]);
+		this->interlude_animation[i].Load(this->frames[i]);
 	}
-	this->background = LoadTexture(this->background_filename);
+	this->background.Load(this->background_filename);
 }
 
 void InterludeScene::init(GameComponents::GameStateManager* game_state_manager, function<void()> start_game_callback){
@@ -28,7 +28,7 @@ void InterludeScene::update() {
 		this->current_frame += 1;
 		this->last_time = GetTime();
 		if (this->current_frame == this->n_frames - 1) {
-			this->game_state_manager->timer.attach(2.5, this->start_game_callback);
+			this->game_state_manager->timer.attach(1, this->start_game_callback);
 			this->is_ready_to_start_game = true;
 		}
 	}

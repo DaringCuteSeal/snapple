@@ -1,12 +1,13 @@
 #include "../prelude.hpp"
 #include "../backend/components.hpp"
 #include <cstdint>
+#include <optional>
 
 #define TILE_ROWS 17
 #define TILE_COLUMNS 32
 #define TILE_DIMENSION 60 // sisi segiempat, dalam piksel
 
-using std::pair;
+using std::pair, std::optional;
 
 // Arah
 enum Direction {
@@ -28,8 +29,9 @@ struct TileCoord {
 class AppleExplosion {
 	Texture2D texture;
 	const uint fps = 13;
-	const GameComponents::Coordinate pos = {185, 790};
+	const GameComponents::Coordinate pos = {790, 185};
 	static const size_t n_frames = 17;
+	const size_t frame_apple_disappear = 7;
 	const char* frames[n_frames] = {
 		"assets/explosion/0.png",
 		"assets/explosion/1.png",
@@ -60,6 +62,7 @@ public:
 	AppleExplosion();
 
 	bool ended();
+	bool show_apple();
 	void draw();
 	void update();
 };
@@ -68,6 +71,7 @@ class PlayerStats {
 private:
 	const int hearts_gaps = 15;
 
+	const char* heart_texture_file = "assets/heart.png";
 	raylib::Texture2D heart_texture;
 public:
 	PlayerStats();
@@ -177,8 +181,10 @@ public:
 
 class Player {
 private:
-	// Radius ular
-	const size_t snake_radius = TILE_DIMENSION / 3;
+	/** Radius ular. Ini juga digunakan untuk membuat jarak antar titik-titik
+	 * pemain.
+	*/
+	const size_t snake_radius = TILE_DIMENSION / 4;
 
 	// Titik-titik yang menjadi tubuh ular pengguna.
 	vector<Vector2> points;
@@ -188,18 +194,47 @@ private:
 	vector<Direction> directions;
 
 	Direction current_direction;
+	
+	// Arah, jika kita perlu berbelok. Kita perlu queue ini karena belokan hanya
+	// dilakukan jika titik tengah dari tekstur
+	optional<Direction> turn_queue;
+
+	// Tekstur untuk kepala ular.
+	const char* texture_snake_head_u = "assets/snake_head_u.png";
+	const char* texture_snake_head_d = "assets/snake_head_d.png";
+	const char* texture_snake_head_l = "assets/snake_head_l.png";
+	const char* texture_snake_head_r = "assets/snake_head_r.png";
+	raylib::Texture2D snake_head_u;
+	raylib::Texture2D snake_head_d;
+	raylib::Texture2D snake_head_l;
+	raylib::Texture2D snake_head_r;
+	
+	// Mengembalikan `true` jika kepala (SEKARANG) sedang bertabrakan dengan
+	// titik-titik tubuh lain.
+	bool check_collision_with_self();
+
+	// Bisa dikendalikan atau tidak?
+	// Ini akan dirubah ketika intro ular masuk selesai.
+	bool controllable = false;
+
 public:
+	Player();
 	void update();
 	void draw();
+	void turn(Direction dir);
 };
 
 class GameScene : public GameComponents::Scene {
 private:
 	AppleExplosion explosion_animation;
+	const char* ground_texture_file = "assets/ground.png";
+	const char* ground_texture_apple_file = "assets/interlude_animation/37.png";
+	raylib::Texture2D ground_texture_apple;
 	raylib::Texture2D ground_texture;
 	bool is_game_started = false;
 	StatusBar status_bar;
 	PlayerStats player_stats;
+	Player player;
 	raylib::Font* game_font;
 	GameComponents::GameStateManager* game_state_manager;
 
