@@ -161,9 +161,6 @@ private:
 	// Statistik pengguna.
 	PlayerStats stats;
 
-	// Math engine
-	MathQuestionDisplay math;
-
 	// Posisi untuk menyembunyikan statusbar.
 	const int min_statusbar_pos_y = -80;
 
@@ -181,6 +178,8 @@ private:
 	bool is_falling = false;
 
 public:
+	MathQuestionDisplay math;
+
 	StatusBar();
 	void init(raylib::Font* game_font);
 	void draw();
@@ -237,7 +236,7 @@ public:
 class GameScene : public GameComponents::Scene {
 private:
 	AppleExplosion explosion_animation;
-	const char* ground_texture_file = "assets/ui.png";
+	const char* ground_texture_file = "assets/ground.png";
 	const char* ground_texture_apple_file = "assets/interlude_animation/37.png";
 	raylib::Texture2D ground_texture_apple;
 	raylib::Texture2D ground_texture;

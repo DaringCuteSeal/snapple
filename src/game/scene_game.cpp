@@ -123,11 +123,11 @@ void MathQuestionDisplay::generate_new_question() {
 		this->q_now.answers[2] = add ? (lhs+rhs + margin2) : (lhs-rhs + margin2);
 
 	} else if (random <= addsubtr_hard) {
-		int lhs_tens = 10 * GetRandomValue(0, 6);
+		int lhs_tens = 10 * GetRandomValue(2, 7);
 		int lhs_ones = GetRandomValue(0, 8);
 		int lhs = lhs_tens + lhs_ones;
 
-		int rhs_tens = 10 * GetRandomValue(0, 5);
+		int rhs_tens = 10 * GetRandomValue(2, 8);
 		int rhs_ones = GetRandomValue(0, 9);
 		int rhs = rhs_tens + rhs_ones;
 
@@ -135,7 +135,7 @@ void MathQuestionDisplay::generate_new_question() {
 		bool add = GetRandomValue(0, 1);
 
 		// opsi ke-2 yang susah: ketika puluhan nya beda 1 atau 2
-		int diff_tens = 10 * GetRandomValue(-2, 2);
+		int diff_tens = 10 * GetRandomValue(2, 3) * (get_random_bool() ? 1 : -1);
 		diff_tens = diff_tens == 0 ? 10 : diff_tens; // kalo tadi dapet 0 kita paksa jadi 10 aja. jadi agak biased tapi gapapa
 
 		this->q_now.display = to_string(lhs) + (add ? " + " : " - ") + to_string(rhs) + " = ?";
@@ -148,8 +148,9 @@ void MathQuestionDisplay::generate_new_question() {
 
 	} else if (random <= multdiv_easy) {
 		// 1 sampai 10 buat yang gampang.
-		int lhs = GetRandomValue(-10, 10);
-		int rhs = GetRandomValue(-11, 10);
+		// hindari angka 0 agar tidak ada pembagian dengan 0 yang bisa crash.
+		int lhs = GetRandomValue(1, 10) * (get_random_bool() ? 1 : -1);
+		int rhs = GetRandomValue(1, 10) * (get_random_bool() ? 1 : -1);
 
 		// kalau ini false, jadi pembagian.
 		bool mult = get_random_bool();
@@ -234,16 +235,16 @@ void MathQuestionDisplay::generate_new_question() {
 	} else if (random <= powerssqrt_easy) {
 		int num = GetRandomValue(2, 20);
 
-		// opsi 2: margin hasil (tens)
+		// opsi 2: margin puluhan
 		int margin1 = 10 * GetRandomValue(1, 2);
 		if (get_random_bool()) margin1 = -margin1;
 
-		// opsi 3: margin input
+		// opsi 3: margin satuan
 		int margin2 = GetRandomValue(1, 2);
-		if (get_random_bool()) margin2 = -margin2;
 
 		// kalau ini false, jadi akar pangkat 2.
 		bool power = get_random_bool();
+		if (get_random_bool()) margin2 = -margin2;
 
 		// kita balik kayak di perkalian pembagian
 		if (!power) {
@@ -251,18 +252,18 @@ void MathQuestionDisplay::generate_new_question() {
 		}
 
 		this->q_now.display = power ? to_string(num) + "^2" : "sqrt " + to_string(num) + " = ?";
-		this->q_now.answers[0] = power ? (pow(num, 2)) : sqrt(num);
-		this->q_now.answers[1] = power ? (pow(num, 2) + margin1) : (sqrt(num) + margin1);
-		this->q_now.answers[2] = power ? (pow(num + margin2, 2)) : (sqrt(num + margin2));
+		this->q_now.answers[0] = power ? (pow(num, 2)) : (sqrt(num));
+		this->q_now.answers[1] = power ? (pow(num, 2) + margin1) : (sqrt(num) + margin2);
+		this->q_now.answers[2] = power ? (pow(num + margin2, 2)) : (sqrt(num) - margin2);
 
 	} else if (random <= powerssqrt_hard) {
 		int num = GetRandomValue(30, 50);
 
-		// opsi 2: margin hasil (tens)
+		// opsi 2: margin puluhan
 		int margin1 = 10 * GetRandomValue(1, 2);
 		if (get_random_bool()) margin1 = -margin1;
 
-		// opsi 3: margin input
+		// opsi 3: margin satuan
 		int margin2 = GetRandomValue(1, 2);
 		if (get_random_bool()) margin2 = -margin2;
 
@@ -277,7 +278,7 @@ void MathQuestionDisplay::generate_new_question() {
 		this->q_now.display = power ? to_string(num) + "^2" : "sqrt " + to_string(num) + " = ?";
 		this->q_now.answers[0] = power ? (pow(num, 2)) : sqrt(num);
 		this->q_now.answers[1] = power ? (pow(num, 2) + margin1) : (sqrt(num) + margin1);
-		this->q_now.answers[2] = power ? (pow(num + margin2, 2)) : (sqrt(num + margin2));
+		this->q_now.answers[2] = power ? (pow(num + margin2, 2)) : (sqrt(num) - margin1);
 	}
 
 	// Ubah ke string
@@ -328,8 +329,6 @@ void MathQuestionDisplay::draw_answers() {
 		// TODO: mungkin pakai raylib::Vector2 langsung daripada struct kita
 		// sendiri hehe
 		DrawTextEx(*(this->game_font), this->q_now.answers_str[i], raylib::Vector2(this->q_now.coords_pixel[i].col, this->q_now.coords_pixel[i].row), 30, 1.0, this->food_color);
-		std::cout<<i << " "<<this->q_now.coords[i].col << "  r: " << this->q_now.coords[i].row << "AA ";
-		std::cout<<i << " "<<this->q_now.coords_pixel[i].col << "  r: " << this->q_now.coords_pixel[i].row << "\n";
 	}
 }
 
@@ -375,27 +374,31 @@ void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* 
 }
 
 void GameScene::update() {
-	if (!this->is_game_started) {
+	if (this->is_game_started) {
+		this->status_bar.update();
+	} else {
 		this->explosion_animation.update();
 		if (this->explosion_animation.ended()) {
 			this->is_game_started = true;
 			explosion_animation.update();
 			this->game_state_manager->timer.attach(1, [this](){this->status_bar.fall();});
 		}
-	} else {
-		this->status_bar.update();
+	}
+
+	if (IsKeyPressed(KEY_A)) {
+		this->status_bar.math.generate_new_question();
 	}
 }
 
 void GameScene::draw() {
-	if (!this->is_game_started) {
+	if (this->is_game_started) {
+		this->ground_texture.Draw(0, 0);
+		this->status_bar.draw();
+	} else {
 		this->explosion_animation.show_apple()
 			? this->ground_texture_apple.Draw(0, 0)
 			: this->ground_texture.Draw();
 		this->explosion_animation.draw();
-	} else {
-		this->ground_texture.Draw(0, 0);
-		this->status_bar.draw();
 	}
 }
 
