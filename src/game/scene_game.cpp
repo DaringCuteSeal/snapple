@@ -80,7 +80,7 @@ void PlayerStats::draw_lives(int x, int y) {
 }
 
 void PlayerStats::draw_length(int x, int y) {
-	DrawTextEx(*(this->game_font), "Length: " + to_string(this->length), raylib::Vector2(x, y), 50, 1.0, this->text_color);
+	DrawTextEx(*(this->game_font), "Length: " + to_string(this->length / SNAKE_LENGTH_FACTOR), raylib::Vector2(x, y), 50, 1.0, this->text_color);
 }
 
 void PlayerStats::draw_pts(int x, int y) {
@@ -378,17 +378,17 @@ Player::Player() {
 	this->snake_head_l.Load(this->texture_snake_head_l);
 	this->snake_head_d.Load(this->texture_snake_head_d);
 	this->snake_head_r.Load(this->texture_snake_head_r);
-	this->head_pos = this->initial_pos.to_coord();
+	this->head_pos = this->initial_pos.to_coord().to_vector2();
 	this->controllable = false;
 }
 
 void Player::create_snake() {
-	this->head_pos = this->initial_pos.to_coord();
+	this->head_pos = this->initial_pos.to_vector2();
 	this->current_direction = LEFT;
 	this->turn_queue = nullopt;
 	this->points.clear();
-	float x = this->head_pos.col + this->snake_point_radius;
-	float y = this->head_pos.row;
+	float x = this->head_pos.x + this->snake_point_radius;
+	float y = this->head_pos.y;
 
 	// badan
 	for (size_t i = 0; i < SNAKE_INITIAL_LENGTH; i++) {
@@ -407,22 +407,35 @@ void Player::move() {
 		this->points[i].x = this->points[i-1].x;
 		this->points[i].y = this->points[i-1].y;
 	}
-	this->points[0] = this->head_pos.to_vector2() + raylib::Vector2 { TILE_DIMENSION/2.0, TILE_DIMENSION/2.0};
+	this->points[0] = this->head_pos + raylib::Vector2 { TILE_DIMENSION/2.0, TILE_DIMENSION/2.0};
 
 	switch(this->current_direction) {
 		case UP:
-			this->head_pos.row -= this->snake_point_radius;
+			this->head_pos.y -= this->snake_point_radius;
 			break;
 		case DOWN:
-			this->head_pos.row += this->snake_point_radius;
+			this->head_pos.y += this->snake_point_radius;
 			break;
 		case LEFT:
-			this->head_pos.col -= this->snake_point_radius;
+			this->head_pos.x -= this->snake_point_radius;
 			break;
 		case RIGHT:
-			this->head_pos.col += this->snake_point_radius;
+			this->head_pos.x += this->snake_point_radius;
 			break;
 	}
+
+}
+
+bool Player::check_collision_self() {
+	size_t points_size = this->points.size();
+	for (size_t i = 1; i < points_size; i++) {
+		if (CheckCollisionCircles(raylib::Vector2 {this->head_pos.x + TILE_DIMENSION/2, this->head_pos.y + TILE_DIMENSION/2}, this->snake_body_radius, this->points[i], this->snake_body_radius)) return true;
+	}
+	return false;
+}
+
+bool Player::check_collision_corners() {
+	return (this->head_pos.x < 0 || this->head_pos.x > TILE_COLUMNS * TILE_DIMENSION || this->head_pos.y < 0 || this->head_pos.y > TILE_ROWS * TILE_DIMENSION);
 
 }
 
@@ -430,43 +443,69 @@ void Player::check_collision() {
 
 }
 
+void Player::unqueue_turn() {
+	// Kalau pemainnya ngelunjak mau putar balik, jangan bolehin
+	if ((this->current_direction == UP && this->turn_queue == DOWN)
+		|| (this->current_direction == DOWN && this->turn_queue == UP)
+		|| (this->current_direction == LEFT && this->turn_queue == RIGHT)
+		|| (this->current_direction == RIGHT && this->turn_queue == LEFT)
+	) return;
+	if (!this->turn_queue.has_value()) return;
+	this->current_direction = this->turn_queue.value();
+	turn_queue = nullopt;
+}
+
 void Player::update() {
+	std::cout<<this->head_pos.x << " " << this->head_pos.y << "\n";
+	if (this->head_pos.y <= 26 * TILE_DIMENSION) {
+		this->controllable = true;
+	};
+
 	this->check_collision();
 	if (this->controllable){
+		if (IsKeyPressed(KEY_UP)) {
+			this->turn_queue = UP;
+		} else if (IsKeyPressed(KEY_DOWN)){
+			this->turn_queue = DOWN;
+		} else if (IsKeyPressed(KEY_LEFT)){
+			this->turn_queue = LEFT;
+		} else if (IsKeyPressed(KEY_RIGHT)){
+			this->turn_queue = RIGHT;
+		}
+	}
 
+	if (int(floor(this->head_pos.y)) % TILE_DIMENSION == 0
+	&& int(floor(this->head_pos.x)) % TILE_DIMENSION == 0) {
+		this->unqueue_turn();
 	}
+
 	this->move();
-	int i = 0;
-	for (auto &a : this->points) {
-		std::cout << i << " " << a.x << " " << a.y << "\n";
-		i++;
-	}
 }
 
 void Player::draw() {
+	// Gambar tubuh
+	size_t points_size = points.size();
+	DrawLineStrip(this->points.data(), this->points.size(), this->snake_color);
+
+	for (size_t i = 1; i < points_size; i++) {
+		DrawCircle(this->points[i].x, this->points[i].y, this->snake_body_radius, this->snake_color);
+	}
+
 	// Gambar kepala
 	switch(this->current_direction) {
 		case UP:
-			this->snake_head_u.Draw(this->head_pos.col, this->head_pos.row);
+			this->snake_head_u.Draw(this->head_pos);
 			break;
 		case DOWN:
-			this->snake_head_d.Draw(this->head_pos.col, this->head_pos.row);
+			this->snake_head_d.Draw(this->head_pos);
 			break;
 		case LEFT:
-			this->snake_head_l.Draw(this->head_pos.col, this->head_pos.row);
+			this->snake_head_l.Draw(this->head_pos);
 			break;
 		case RIGHT:
-			this->snake_head_r.Draw(this->head_pos.col, this->head_pos.row);
+			this->snake_head_r.Draw(this->head_pos);
 			break;
 	}
-
-	// Gambar tubuh dengan interpolasi kurva bézier kuadratik
-	size_t points_size = points.size();
-	// DrawLineStrip(this->points.data(), this->points.size(), this->snake_color);
-	for (size_t i = 1; i < points_size; i++) {
-		DrawLineBezier(this->points[i-1], this->points[i], this->snake_body_radius * 2, this->snake_color);
-	}
-	DrawCircle(this->points[points_size-1].x, this->points[points_size-1].y, this->snake_body_radius, this->snake_color);
 }
 
 GameScene::GameScene() {

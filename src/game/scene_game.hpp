@@ -3,7 +3,9 @@
 #include <cstdint>
 #include <optional>
 
-#define SNAKE_INITIAL_LENGTH 24 // gak termasuk kepala
+#define SNAKE_INITIAL_LENGTH 49 // gak termasuk kepala
+#define SNAKE_LENGTH_FACTOR 5 // banyak panjang untuk ditambah ketika makan angka
+                                                                   // haha makan angka huh ..
 #define TILE_ROWS 17
 #define TILE_COLUMNS 32
 #define TILE_DIMENSION 60 // sisi segiempat, dalam piksel
@@ -87,11 +89,12 @@ public:
 	// TODO: atau ini harusnya ga variabel sendiri, biar kita bisa
 	// player_segments.length() gitu? tapi kayaknya gak optimal kalau gitu karena
 	// variabel ini dibaca setiap update() scene.
-	uint length = 1 + SNAKE_INITIAL_LENGTH;
+	uint length = (1 + SNAKE_INITIAL_LENGTH) / SNAKE_LENGTH_FACTOR;
 
 	// Skor pemain.
 	long long pts = 0;
 
+	void turn(Direction direction);
 	void init(raylib::Font* game_font);
 	void draw_lives(int x, int y);
 	void draw_pts(int x, int y);
@@ -193,24 +196,19 @@ public:
 class Player {
 private:
 	/** Radius titik-titik ular. 
+	 * Catatan: harus merupakan faktor dari TILE_DIMENSION.
 	*/
-
 	const float snake_point_radius = TILE_DIMENSION / 15.0;
 
-	const float snake_body_radius = TILE_DIMENSION / 4.0;
+	const float snake_body_radius = TILE_DIMENSION / 5.0;
 
 	const Color snake_color = Color { .r = 87, .g = 141, .b = 237, .a = 255 };
 
 	// Titik-titik yang menjadi tubuh ular pengguna (tidak termasuk kepala).
 	vector<Vector2> points;
 
-	// Arah-arah dari tiap titik (tidak termasuk kepala). Sebenarnya gak
-	// terlalu berguna untuk titik-titik tengah tapi untuk arah ekor
-	// berguna.
-	vector<Direction> directions;
-
 	// Posisi kepala.
-	GameComponents::Coordinate head_pos;
+	raylib::Vector2 head_pos;
 
 	// Arah sekarang (a.k.a arah kepala).
 	Direction current_direction;
@@ -231,24 +229,29 @@ private:
 	
 	// Mengembalikan `true` jika kepala (SEKARANG) sedang bertabrakan dengan
 	// titik-titik tubuh lain.
-	bool check_collision_with_self();
+	bool check_collision_self();
+
+	// Mengembalikan `true` jika kepala (SEKARANG) sedang bertabrakan dengan
+	// dinding.
+	bool check_collision_corners();
+
 
 	// Posisi awal ular
 	TileCoord initial_pos = {3, TILE_COLUMNS + 1};
 
 	// Bisa dikendalikan atau tidak?
 	// Ini akan dirubah ketika intro ular masuk selesai.
-	bool controllable = false;
-
 	void move(); // ular bergerak sebesar v
 
 public:
+	bool controllable = false;
+
 	Player();
 	void create_snake();
 	void check_collision();
 	void update();
 	void draw();
-	void turn(Direction dir);
+	void unqueue_turn();
 };
 
 class GameScene : public GameComponents::Scene {
