@@ -383,6 +383,10 @@ void MathQuestionDisplay::draw_answers() {
 	}
 }
 
+void check_collision(raylib::Vector2 head_location) {
+
+}
+
 StatusBar::StatusBar() {
 	this->pos = {this->min_statusbar_pos_y, 0};
 	this->texture.Load(this->texture_file);

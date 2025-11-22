@@ -181,7 +181,7 @@ public:
 	// Cek tabrakan dengan makanan dan tambah poin, panjang ular, dsb. jika ya.
 	void check_collision(raylib::Vector2 head_location);
 
-	void draw_bar_item(int x, int y);
+	// Gambar jawaban-jawaban
 	void draw_answers();
 };
 
