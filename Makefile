@@ -10,6 +10,8 @@ LDFLAGS = -lraylib
 # Define the executable name
 TARGET = snapple
 
+TARGET_TEST = testsuite
+
 # Define source files
 SRCS = src/backend/components.cpp src/game/game.cpp src/game/scene_intro.cpp src/game/scene_interlude.cpp src/game/scene_game.cpp src/main.cpp
 
@@ -32,9 +34,9 @@ $(TARGET): $(OBJS)
 
 # Clean target: remove generated files
 clean:
-	rm -f $(OBJS) $(TARGET) $(OBJS_TEST) test_backend
+	rm -f $(OBJS) $(TARGET) $(TARGET_TEST) $(OBJS_TEST)
 
 # Test target
 test: $(OBJS_TEST)
-	$(CXX) $(OBJS_TEST) $(LDFLAGS) -lgtest -o testsuite
+	$(CXX) $(OBJS_TEST) $(LDFLAGS) -lgtest -o $(TARGET_TEST)
 	./testsuite
