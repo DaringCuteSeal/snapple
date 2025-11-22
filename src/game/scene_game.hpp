@@ -38,23 +38,7 @@ enum Food {
 };
 
 
-long long get_pts(Difficulty difficulty) {
-	switch(difficulty) {
-		case ADD_SUB_EASY:
-		case ADD_SUB_HARD:
-			return 10;
-		break;
-		case MULT_DIV_EASY:
-		case MULT_DIV_HARD:
-		case POW_SQRT_EASY:
-			return 20;
-		break;
-		case POW_SQRT_HARD:
-			return 20;
-		break;
-	}
-
-}
+long long get_pts(Difficulty difficulty);
 
 // Koordinat (dalam tile, bukan piksel)
 struct TileCoord {
@@ -158,6 +142,7 @@ struct MathQuestion {
 	string answers_str[3];
 
 	// Kesulitan (buat variasi poin)
+	Difficulty difficulty;
 };
 
 /** Kelas yang mengatur display matematika. Ada bagian untuk widget di bar dan
@@ -186,9 +171,9 @@ public:
 	// Generate sebuah pertanyaan dan simpan ke state `this->q_now`.
 	void generate_new_question();
 
-	// Dapatkan pointer ke array 3 jawaban yang memungkinkan.
-	// Digunakan untuk collision checking.
-	MathQuestion* get_question();
+	// Cek tabrakan dengan makanan dan tambah poin, panjang ular, dsb. jika ya.
+	void check_collision(raylib::Vector2 head_location);
+
 	void draw_bar_item(int x, int y);
 	void draw_answers();
 };
@@ -245,9 +230,6 @@ private:
 	// Titik-titik yang menjadi tubuh ular pengguna (tidak termasuk kepala).
 	vector<Vector2> points;
 
-	// Posisi kepala.
-	raylib::Vector2 head_pos;
-
 	// Arah sekarang (a.k.a arah kepala).
 	Direction current_direction;
 	
@@ -273,6 +255,8 @@ private:
 	// dinding.
 	bool check_collision_corners();
 
+	// Cek tabrakan dengan makanan dan tambah poin, panjang ular, dsb. jika ya.
+	void check_collision_food();
 
 	// Posisi awal ular
 	TileCoord initial_pos = {3, TILE_COLUMNS + 1};
@@ -288,6 +272,9 @@ private:
 
 public:
 	bool controllable = false;
+
+	// Posisi kepala.
+	raylib::Vector2 head_pos;
 
 	Player();
 	void create_snake();

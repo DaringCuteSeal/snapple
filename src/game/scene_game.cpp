@@ -13,6 +13,42 @@ TileCoord get_random_tile_coord() {
 	};
 }
 
+Food get_food(Difficulty difficulty) {
+	switch(difficulty) {
+		case ADD_SUB_EASY:
+		case ADD_SUB_HARD:
+			return APPLE;
+			break;
+
+		case MULT_DIV_EASY:
+		case MULT_DIV_HARD:
+			return APPLE_PIE;
+			break;
+
+		case POW_SQRT_EASY:
+		case POW_SQRT_HARD:
+			return GOLDEN_APPLE_PIE;
+	}
+}
+
+long long get_pts(Food food) {
+	switch(food) {
+		case BAD_APPLE:
+			return -10;
+			break;
+		case APPLE:
+			return 10;
+			break;
+		case APPLE_PIE:
+			return 20;
+			break;
+		case GOLDEN_APPLE_PIE:
+		return 50;
+			break;
+	}
+}
+
+
 GameComponents::Coordinate TileCoord::to_coord() {
 	return GameComponents::Coordinate { TILE_DIMENSION * this->row, TILE_DIMENSION * this->col };
 }
@@ -131,6 +167,7 @@ void MathQuestionDisplay::generate_new_question() {
 		this->q_now.answers[0] = add ? (lhs+rhs) : (lhs-rhs);
 		this->q_now.answers[1] = add ? (lhs+rhs + margin1) : (lhs-rhs + margin1);
 		this->q_now.answers[2] = add ? (lhs+rhs + margin2) : (lhs-rhs + margin2);
+		this->q_now.difficulty = ADD_SUB_EASY;
 
 	} else if (random <= addsubtr_hard) {
 		int lhs_tens = 10 * GetRandomValue(2, 7);
@@ -155,6 +192,9 @@ void MathQuestionDisplay::generate_new_question() {
 		// opsi ke-3 yang susah: satuannya dibalik (buat pengurangan) -> menjebak
 		// kalau tadi penambahan kita balik aja `diff_tens` yang sebelumnya.
 		this->q_now.answers[2] = add ? (lhs+rhs - diff_tens) : ((lhs_tens + rhs_ones) - (rhs_tens + lhs_ones));
+
+		this->q_now.difficulty = ADD_SUB_HARD;
+
 
 	} else if (random <= multdiv_easy) {
 		// 1 sampai 10 buat yang gampang.
@@ -197,6 +237,8 @@ void MathQuestionDisplay::generate_new_question() {
 			int margin = get_random_bool() ? 1 : -1;
 			this->q_now.answers[2] = lhs/rhs + margin;
 		}
+
+		this->q_now.difficulty = MULT_DIV_EASY;
 
 	} else if (random <= multdiv_hard) {
 		// 20 sampai 50 buat yang gampang.
@@ -241,6 +283,8 @@ void MathQuestionDisplay::generate_new_question() {
 			int margin = get_random_bool() ? 1 : -1;
 			this->q_now.answers[2] = lhs/rhs + margin;
 		}
+
+		this->q_now.difficulty = MULT_DIV_HARD;
 		
 	} else if (random <= powerssqrt_easy) {
 		int num = GetRandomValue(2, 20);
@@ -265,6 +309,7 @@ void MathQuestionDisplay::generate_new_question() {
 		this->q_now.answers[0] = power ? (pow(num, 2)) : (sqrt(num));
 		this->q_now.answers[1] = power ? (pow(num, 2) + margin1) : (sqrt(num) + margin2);
 		this->q_now.answers[2] = power ? (pow(num + margin2, 2)) : (sqrt(num) - margin2);
+		this->q_now.difficulty = POW_SQRT_EASY;
 
 	} else if (random <= powerssqrt_hard) {
 		int num = GetRandomValue(30, 50);
@@ -289,6 +334,7 @@ void MathQuestionDisplay::generate_new_question() {
 		this->q_now.answers[0] = power ? (pow(num, 2)) : sqrt(num);
 		this->q_now.answers[1] = power ? (pow(num, 2) + margin1) : (sqrt(num) + margin1);
 		this->q_now.answers[2] = power ? (pow(num + margin2, 2)) : (sqrt(num) - margin1);
+		this->q_now.difficulty = POW_SQRT_HARD;
 	}
 
 	// Ubah ke string
@@ -325,9 +371,7 @@ void MathQuestionDisplay::generate_new_question() {
 	}
 }
 
-MathQuestion* MathQuestionDisplay::get_question() {
-	return &this->q_now;
-}
+
 
 void MathQuestionDisplay::draw_bar_item(int x, int y) {
 	DrawTextEx(*(this->game_font), this->q_now.display, raylib::Vector2(x, y), 60, 1.0, this->bar_color);
