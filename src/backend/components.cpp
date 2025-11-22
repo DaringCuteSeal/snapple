@@ -115,3 +115,7 @@ Coordinate Coordinate::add_row(int r) {
 Coordinate Coordinate::add_col(int c) {
 	return Coordinate { this->row, this->col + c };
 };
+
+raylib::Vector2 Coordinate::to_vector2() {
+	return raylib::Vector2 { float(this->col), float(this->row) };
+};

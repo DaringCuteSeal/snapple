@@ -1,5 +1,6 @@
 #include "scene_game.hpp"
 #include <raylib.h>
+#include <raymath.h>
 #include <string>
 
 using std::to_string;
@@ -18,6 +19,14 @@ GameComponents::Coordinate TileCoord::to_coord() {
 
 GameComponents::Coordinate TileCoord::to_coord_center() {
 	return GameComponents::Coordinate { TILE_DIMENSION * this->row + TILE_DIMENSION/2, TILE_DIMENSION * this->col + TILE_DIMENSION/2};
+}
+
+raylib::Vector2 TileCoord::to_vector2() {
+	return raylib::Vector2 { float(this->col * TILE_DIMENSION), float(this->row * TILE_DIMENSION) };
+}
+
+raylib::Vector2 TileCoord::to_vector2_center() {
+	return raylib::Vector2 { float(this->col * TILE_DIMENSION + (TILE_DIMENSION/2.0)), float(this->row * TILE_DIMENSION + (TILE_DIMENSION/2.0)) };
 }
 
 bool get_random_bool() {
@@ -58,6 +67,7 @@ PlayerStats::PlayerStats()  {
 }
 
 void PlayerStats::init (raylib::Font* game_font)  {
+	this->length = 1 + SNAKE_INITIAL_LENGTH;
 	this->game_font = game_font;
 }
 
@@ -363,9 +373,106 @@ void StatusBar::update() {
 	}
 }
 
+Player::Player() {
+	this->snake_head_u.Load(this->texture_snake_head_u);
+	this->snake_head_l.Load(this->texture_snake_head_l);
+	this->snake_head_d.Load(this->texture_snake_head_d);
+	this->snake_head_r.Load(this->texture_snake_head_r);
+	this->head_pos = this->initial_pos.to_coord();
+	this->controllable = false;
+}
+
+void Player::create_snake() {
+	this->head_pos = this->initial_pos.to_coord();
+	this->current_direction = LEFT;
+	this->turn_queue = nullopt;
+	this->points.clear();
+	float x = this->head_pos.col + this->snake_point_radius;
+	float y = this->head_pos.row;
+
+	// badan
+	for (size_t i = 0; i < SNAKE_INITIAL_LENGTH; i++) {
+		this->points.push_back({x, y});
+		x += this->snake_point_radius;
+	}
+}
+
+void Player::move() {
+	size_t points_size = points.size();
+
+	if (points_size == 0) return; // siapa tau gitu kan ya meski tidak mungkin
+
+	// Yang lainnya mengikuti
+	for (size_t i = points_size - 1; i >= 1; i--) {
+		this->points[i].x = this->points[i-1].x;
+		this->points[i].y = this->points[i-1].y;
+	}
+	this->points[0] = this->head_pos.to_vector2() + raylib::Vector2 { TILE_DIMENSION/2.0, TILE_DIMENSION/2.0};
+
+	switch(this->current_direction) {
+		case UP:
+			this->head_pos.row -= this->snake_point_radius;
+			break;
+		case DOWN:
+			this->head_pos.row += this->snake_point_radius;
+			break;
+		case LEFT:
+			this->head_pos.col -= this->snake_point_radius;
+			break;
+		case RIGHT:
+			this->head_pos.col += this->snake_point_radius;
+			break;
+	}
+
+}
+
+void Player::check_collision() {
+
+}
+
+void Player::update() {
+	this->check_collision();
+	if (this->controllable){
+
+	}
+	this->move();
+	int i = 0;
+	for (auto &a : this->points) {
+		std::cout << i << " " << a.x << " " << a.y << "\n";
+		i++;
+	}
+}
+
+void Player::draw() {
+	// Gambar kepala
+	switch(this->current_direction) {
+		case UP:
+			this->snake_head_u.Draw(this->head_pos.col, this->head_pos.row);
+			break;
+		case DOWN:
+			this->snake_head_d.Draw(this->head_pos.col, this->head_pos.row);
+			break;
+		case LEFT:
+			this->snake_head_l.Draw(this->head_pos.col, this->head_pos.row);
+			break;
+		case RIGHT:
+			this->snake_head_r.Draw(this->head_pos.col, this->head_pos.row);
+			break;
+	}
+
+	// Gambar tubuh dengan interpolasi kurva bézier kuadratik
+	size_t points_size = points.size();
+	// DrawLineStrip(this->points.data(), this->points.size(), this->snake_color);
+	for (size_t i = 1; i < points_size; i++) {
+		DrawLineBezier(this->points[i-1], this->points[i], this->snake_body_radius * 2, this->snake_color);
+	}
+	DrawCircle(this->points[points_size-1].x, this->points[points_size-1].y, this->snake_body_radius, this->snake_color);
+}
+
 GameScene::GameScene() {
 	this->ground_texture_apple.Load(this->ground_texture_apple_file);
 	this->ground_texture.Load(this->ground_texture_file);
+	this->player.create_snake();
 }
 
 void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager) {
@@ -376,6 +483,7 @@ void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* 
 void GameScene::update() {
 	if (this->is_game_started) {
 		this->status_bar.update();
+		this->player.update();
 	} else {
 		this->explosion_animation.update();
 		if (this->explosion_animation.ended()) {
@@ -384,27 +492,17 @@ void GameScene::update() {
 			this->game_state_manager->timer.attach(1, [this](){this->status_bar.fall();});
 		}
 	}
-
-	if (IsKeyPressed(KEY_A)) {
-		this->status_bar.math.generate_new_question();
-	}
 }
 
 void GameScene::draw() {
 	if (this->is_game_started) {
 		this->ground_texture.Draw(0, 0);
 		this->status_bar.draw();
+		this->player.draw();
 	} else {
 		this->explosion_animation.show_apple()
 			? this->ground_texture_apple.Draw(0, 0)
 			: this->ground_texture.Draw();
 		this->explosion_animation.draw();
 	}
-}
-
-Player::Player() {
-	this->snake_head_u.Load(this->texture_snake_head_u);
-	this->snake_head_l.Load(this->texture_snake_head_l);
-	this->snake_head_d.Load(this->texture_snake_head_d);
-	this->snake_head_r.Load(this->texture_snake_head_r);
 }

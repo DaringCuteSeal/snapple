@@ -3,12 +3,12 @@
 #include <cstdint>
 #include <optional>
 
-#define SNAKE_INITIAL_LENGTH 6
+#define SNAKE_INITIAL_LENGTH 24 // gak termasuk kepala
 #define TILE_ROWS 17
 #define TILE_COLUMNS 32
 #define TILE_DIMENSION 60 // sisi segiempat, dalam piksel
 
-using std::pair, std::optional;
+using std::pair, std::optional, std::nullopt;
 
 // Arah
 enum Direction {
@@ -25,6 +25,8 @@ struct TileCoord {
 
 	GameComponents::Coordinate to_coord();
 	GameComponents::Coordinate to_coord_center();
+	raylib::Vector2 to_vector2_center();
+	raylib::Vector2 to_vector2();
 };
 
 class AppleExplosion {
@@ -85,7 +87,7 @@ public:
 	// TODO: atau ini harusnya ga variabel sendiri, biar kita bisa
 	// player_segments.length() gitu? tapi kayaknya gak optimal kalau gitu karena
 	// variabel ini dibaca setiap update() scene.
-	uint length = SNAKE_INITIAL_LENGTH; // termasuk kepala
+	uint length = 1 + SNAKE_INITIAL_LENGTH;
 
 	// Skor pemain.
 	long long pts = 0;
@@ -190,18 +192,27 @@ public:
 
 class Player {
 private:
-	/** Radius ular. Ini juga digunakan untuk membuat jarak antar titik-titik
-	 * pemain.
+	/** Radius titik-titik ular. 
 	*/
-	const size_t snake_radius = TILE_DIMENSION / 4;
 
-	// Titik-titik yang menjadi tubuh ular pengguna.
+	const float snake_point_radius = TILE_DIMENSION / 15.0;
+
+	const float snake_body_radius = TILE_DIMENSION / 4.0;
+
+	const Color snake_color = Color { .r = 87, .g = 141, .b = 237, .a = 255 };
+
+	// Titik-titik yang menjadi tubuh ular pengguna (tidak termasuk kepala).
 	vector<Vector2> points;
 
-	// Arah-arah dari tiap titik. Sebenarnya gak terlalu berguna untuk
-	// titik-titik tengah tapi untuk arah ekor berguna.
+	// Arah-arah dari tiap titik (tidak termasuk kepala). Sebenarnya gak
+	// terlalu berguna untuk titik-titik tengah tapi untuk arah ekor
+	// berguna.
 	vector<Direction> directions;
 
+	// Posisi kepala.
+	GameComponents::Coordinate head_pos;
+
+	// Arah sekarang (a.k.a arah kepala).
 	Direction current_direction;
 	
 	// Arah, jika kita perlu berbelok. Kita perlu queue ini karena belokan hanya
@@ -222,12 +233,19 @@ private:
 	// titik-titik tubuh lain.
 	bool check_collision_with_self();
 
+	// Posisi awal ular
+	TileCoord initial_pos = {3, TILE_COLUMNS + 1};
+
 	// Bisa dikendalikan atau tidak?
 	// Ini akan dirubah ketika intro ular masuk selesai.
 	bool controllable = false;
 
+	void move(); // ular bergerak sebesar v
+
 public:
 	Player();
+	void create_snake();
+	void check_collision();
 	void update();
 	void draw();
 	void turn(Direction dir);

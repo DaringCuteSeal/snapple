@@ -158,12 +158,13 @@ public:
 /** Representing a coordinate.
 */
 struct Coordinate {
-  int row;
-  int col;
+	int row;
+	int col;
 
-  Coordinate operator +(const Coordinate& other) const;
-  Coordinate add_row(int r);
-  Coordinate add_col(int c);
+	Coordinate operator +(const Coordinate& other) const;
+	Coordinate add_row(int r);
+	Coordinate add_col(int c);
+	raylib::Vector2 to_vector2();
 };
 
 }
