@@ -38,7 +38,8 @@ enum Food {
 };
 
 
-long long get_pts(Difficulty difficulty);
+Food get_food(Difficulty difficulty);
+long long get_pts(Food food);
 
 // Koordinat (dalam tile, bukan piksel)
 struct TileCoord {
@@ -143,6 +144,9 @@ struct MathQuestion {
 
 	// Kesulitan (buat variasi poin)
 	Difficulty difficulty;
+
+	// Tulis pertanyaannya.
+	void draw_question(int x, int y, raylib::Font* game_font, Color color);
 };
 
 /** Kelas yang mengatur display matematika. Ada bagian untuk widget di bar dan
@@ -159,13 +163,16 @@ private:
 	const uint probability_powerssqrt_easy = 15;
 	const uint probability_powerssqrt_hard = 5;
 
-	MathQuestion q_now;
-	const Color bar_color = ORANGE;
 	const Color food_color = WHITE;
 	raylib::Font* game_font;
 
 public:
 	MathQuestionDisplay();
+
+	// Pertanyaan sekarang. Bisa digunakan sebagai pointer untuk object lain.
+	// (Tidak pernah invalid selama kelas ini masih valid).
+	MathQuestion q_now;
+
 	void init(raylib::Font* game_font);
 
 	// Generate sebuah pertanyaan dan simpan ke state `this->q_now`.
@@ -186,6 +193,8 @@ private:
 	const GameComponents::Coordinate question_pos = {3, 815};
 	const GameComponents::Coordinate snake_length_pos = {3, 1400};
 
+	const Color math_question_color = ORANGE;
+
 	// Statistik pengguna.
 	PlayerStats stats;
 
@@ -197,22 +206,24 @@ private:
 
 	const int vy = 3;
 
-	// Posisi statusbar.
-	GameComponents::Coordinate pos = {0, 0};
-
 	const char* texture_file = "assets/statusbar.png";
 	raylib::Texture2D texture;
 
 	bool is_falling = false;
 
+	// Pertanyaan sekarang.
+	MathQuestion* math_question;
+
+	raylib::Font* game_font;
+
 public:
-	MathQuestionDisplay math;
+	// Posisi statusbar.
+	GameComponents::Coordinate pos = {0, 0};
 
 	StatusBar();
-	void init(raylib::Font* game_font);
+	void init(raylib::Font* game_font, MathQuestion* math_question);
 	void draw();
 	void update();
-	void draw_math_answers();
 	void fall();
 };
 
@@ -294,6 +305,7 @@ private:
 	bool is_game_started = false;
 	StatusBar status_bar;
 	PlayerStats player_stats;
+	MathQuestionDisplay math;
 	Player player;
 	raylib::Font* game_font;
 	GameComponents::GameStateManager* game_state_manager;

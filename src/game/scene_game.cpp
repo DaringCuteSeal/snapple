@@ -123,6 +123,10 @@ void PlayerStats::draw_pts(int x, int y) {
 	DrawTextEx(*(this->game_font), "Pts: " + to_string(this->pts), raylib::Vector2(x, y), 50, 1.0, this->text_color);
 }
 
+void MathQuestion::draw_question(int x, int y, raylib::Font* game_font, Color color) {
+	DrawTextEx(*game_font, this->display, raylib::Vector2(x, y), 60, 1.0, color);
+}
+
 
 MathQuestionDisplay::MathQuestionDisplay() {
 	// Generate question langsung biar gak ada masalah null pointer kalo
@@ -371,13 +375,6 @@ void MathQuestionDisplay::generate_new_question() {
 	}
 }
 
-
-
-void MathQuestionDisplay::draw_bar_item(int x, int y) {
-	DrawTextEx(*(this->game_font), this->q_now.display, raylib::Vector2(x, y), 60, 1.0, this->bar_color);
-
-}
-
 void MathQuestionDisplay::draw_answers() {
 	for (size_t i = 0; i < 3; i++) {
 		// TODO: mungkin pakai raylib::Vector2 langsung daripada struct kita
@@ -396,9 +393,10 @@ void StatusBar::fall() {
 	this->pos = {this->min_statusbar_pos_y, 0};
 }
 
-void StatusBar::init(raylib::Font* game_font) {
-	this->math.init(game_font);
+void StatusBar::init(raylib::Font* game_font, MathQuestion* math_question) {
+	this->game_font = game_font;
 	this->stats.init(game_font);
+	this->math_question = math_question;
 }
 
 void StatusBar::draw() {
@@ -406,8 +404,7 @@ void StatusBar::draw() {
 	this->stats.draw_lives(this->pos.col + this->lives_pos.col, this->pos.row + this->lives_pos.row);
 	this->stats.draw_pts(this->pos.col + this->pts_pos.col, this->pos.row + this->pts_pos.row);
 	this->stats.draw_length(this->pos.col + this->snake_length_pos.col, this->pos.row + this->snake_length_pos.row);
-	this->math.draw_bar_item(this->pos.col + this->question_pos.col, this->pos.row + this->question_pos.row);
-	this->math.draw_answers();
+	this->math_question->draw_question(this->pos.col + this->question_pos.col, this->pos.row + this->question_pos.row, this->game_font, this->math_question_color);
 }
 
 void StatusBar::update() {
@@ -570,7 +567,8 @@ GameScene::GameScene() {
 }
 
 void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager) {
-	this->status_bar.init(game_font);
+	this->math.init(game_font);
+	this->status_bar.init(game_font, &this->math.q_now);
 	this->game_state_manager = game_state_manager;
 }
 
@@ -592,6 +590,7 @@ void GameScene::draw() {
 	if (this->is_game_started) {
 		this->ground_texture.Draw(0, 0);
 		this->status_bar.draw();
+		this->math.draw_answers();
 		this->player.draw();
 	} else {
 		this->explosion_animation.show_apple()
