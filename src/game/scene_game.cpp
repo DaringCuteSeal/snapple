@@ -430,9 +430,10 @@ void Player::move() {
 
 bool Player::check_collision_self() {
 	size_t points_size = this->points.size();
-	size_t init = ceil(TILE_DIMENSION/2/this->snake_point_radius);
+	float div_2 = TILE_DIMENSION/2.0; // cast ke float di awal
+	size_t init = ceil(div_2/this->snake_point_radius);
 	for (size_t i = init; i < points_size; i++) {
-		if (CheckCollisionCircles(raylib::Vector2 {this->head_pos.x + TILE_DIMENSION/2, this->head_pos.y + TILE_DIMENSION/2}, this->snake_body_radius, this->points[i], this->snake_body_radius)) return true;
+		if (CheckCollisionCircles(raylib::Vector2 {this->head_pos.x + div_2, this->head_pos.y + div_2}, this->snake_body_radius, this->points[i], this->snake_body_radius)) return true;
 	}
 	return false;
 }

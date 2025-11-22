@@ -20,6 +20,42 @@ enum Direction {
 	RIGHT
 };
 
+// Jenis soal yang dikerjakan
+enum Difficulty {
+	ADD_SUB_EASY,
+	ADD_SUB_HARD,
+	MULT_DIV_EASY,
+	MULT_DIV_HARD,
+	POW_SQRT_EASY,
+	POW_SQRT_HARD,
+};
+
+enum Food {
+	BAD_APPLE,
+	APPLE,
+	APPLE_PIE,
+	GOLDEN_APPLE_PIE
+};
+
+
+long long get_pts(Difficulty difficulty) {
+	switch(difficulty) {
+		case ADD_SUB_EASY:
+		case ADD_SUB_HARD:
+			return 10;
+		break;
+		case MULT_DIV_EASY:
+		case MULT_DIV_HARD:
+		case POW_SQRT_EASY:
+			return 20;
+		break;
+		case POW_SQRT_HARD:
+			return 20;
+		break;
+	}
+
+}
+
 // Koordinat (dalam tile, bukan piksel)
 struct TileCoord {
 	int row;
@@ -120,6 +156,8 @@ struct MathQuestion {
 
 	// Jawaban (dalam string; untuk display);
 	string answers_str[3];
+
+	// Kesulitan (buat variasi poin)
 };
 
 /** Kelas yang mengatur display matematika. Ada bagian untuk widget di bar dan
