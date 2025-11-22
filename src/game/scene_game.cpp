@@ -424,7 +424,7 @@ Player::Player() {
 	this->snake_head_d.Load(this->texture_snake_head_d);
 	this->snake_head_r.Load(this->texture_snake_head_r);
 	this->head_pos = this->initial_pos.to_coord().to_vector2();
-	this->controllable = false;
+	this->controllable = true;
 }
 
 void Player::create_snake() {
@@ -513,8 +513,7 @@ void Player::update() {
 	}
 
 	// Hanya terjadi sekali tiap main.
-	if (this->head_pos.x <= 26 * TILE_DIMENSION) {
-		this->controllable = true;
+	if (this->head_pos.x <= TILE_COLUMNS * TILE_DIMENSION - TILE_DIMENSION) {
 		this->try_check_collision = true;
 	};
 
@@ -530,10 +529,10 @@ void Player::update() {
 		}
 	}
 
-	if (int(floor(this->head_pos.y)) % TILE_DIMENSION == 0
-	&& int(floor(this->head_pos.x)) % TILE_DIMENSION == 0) {
-		this->unqueue_turn();
-	}
+	// if (int(floor(this->head_pos.y)) % TILE_DIMENSION == 0
+	// && int(floor(this->head_pos.x)) % TILE_DIMENSION == 0) {
+	this->unqueue_turn();
+	// }
 
 	this->move();
 }
