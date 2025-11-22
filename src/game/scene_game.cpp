@@ -383,6 +383,8 @@ Player::Player() {
 }
 
 void Player::create_snake() {
+	this->active = true;
+	this->try_check_collision = false;
 	this->head_pos = this->initial_pos.to_vector2();
 	this->current_direction = LEFT;
 	this->turn_queue = nullopt;
@@ -428,19 +430,21 @@ void Player::move() {
 
 bool Player::check_collision_self() {
 	size_t points_size = this->points.size();
-	for (size_t i = 1; i < points_size; i++) {
+	size_t init = ceil(TILE_DIMENSION/2/this->snake_point_radius);
+	for (size_t i = init; i < points_size; i++) {
 		if (CheckCollisionCircles(raylib::Vector2 {this->head_pos.x + TILE_DIMENSION/2, this->head_pos.y + TILE_DIMENSION/2}, this->snake_body_radius, this->points[i], this->snake_body_radius)) return true;
 	}
 	return false;
 }
 
 bool Player::check_collision_corners() {
-	return (this->head_pos.x < 0 || this->head_pos.x > TILE_COLUMNS * TILE_DIMENSION || this->head_pos.y < 0 || this->head_pos.y > TILE_ROWS * TILE_DIMENSION);
-
+	return (this->head_pos.x < 0 || this->head_pos.x + TILE_DIMENSION > TILE_COLUMNS * TILE_DIMENSION || this->head_pos.y < TILE_DIMENSION || this->head_pos.y > TILE_ROWS * TILE_DIMENSION);
 }
 
 void Player::check_collision() {
-
+	if (this->check_collision_self() || this->check_collision_corners()) {
+		this->active = false;
+	};
 }
 
 void Player::unqueue_turn() {
@@ -456,12 +460,18 @@ void Player::unqueue_turn() {
 }
 
 void Player::update() {
-	std::cout<<this->head_pos.x << " " << this->head_pos.y << "\n";
-	if (this->head_pos.y <= 26 * TILE_DIMENSION) {
+	if (!active) return;
+
+	if (this->try_check_collision) {
+		this->check_collision();
+	}
+
+	// Hanya terjadi sekali tiap main.
+	if (this->head_pos.x <= 26 * TILE_DIMENSION) {
 		this->controllable = true;
+		this->try_check_collision = true;
 	};
 
-	this->check_collision();
 	if (this->controllable){
 		if (IsKeyPressed(KEY_UP)) {
 			this->turn_queue = UP;

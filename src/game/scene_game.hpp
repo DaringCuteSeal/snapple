@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <optional>
 
-#define SNAKE_INITIAL_LENGTH 49 // gak termasuk kepala
+#define SNAKE_INITIAL_LENGTH 50 - 1 // gak termasuk kepala
 #define SNAKE_LENGTH_FACTOR 5 // banyak panjang untuk ditambah ketika makan angka
                                                                    // haha makan angka huh ..
 #define TILE_ROWS 17
@@ -242,6 +242,11 @@ private:
 	// Bisa dikendalikan atau tidak?
 	// Ini akan dirubah ketika intro ular masuk selesai.
 	void move(); // ular bergerak sebesar v
+	
+	// Cek collision atau tidak
+	bool try_check_collision = false;
+
+	bool active = true;
 
 public:
 	bool controllable = false;
