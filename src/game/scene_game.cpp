@@ -371,15 +371,13 @@ void MathQuestionDisplay::generate_new_question() {
 
 	// Koordinat asli (dalam piksel)
 	for (size_t i = 0; i < 3; i++) {
-		this->q_now.coords_pixel[i] = q_now.coords[i].to_coord().add_row(15).add_col((60 - q_now.answers_str[i].length()*12)/2);
+		this->q_now.coords_pixel[i] = q_now.coords[i].to_vector2().Add({static_cast<float>(((60 - q_now.answers_str[i].length()*12)/2)), 15});
 	}
 }
 
 void MathQuestionDisplay::draw_answers() {
 	for (size_t i = 0; i < 3; i++) {
-		// TODO: mungkin pakai raylib::Vector2 langsung daripada struct kita
-		// sendiri hehe
-		DrawTextEx(*(this->game_font), this->q_now.answers_str[i], raylib::Vector2(this->q_now.coords_pixel[i].col, this->q_now.coords_pixel[i].row), 30, 1.0, this->food_color);
+		DrawTextEx(*(this->game_font), this->q_now.answers_str[i], this->q_now.coords_pixel[i], 30, 1.0, this->food_color);
 	}
 }
 

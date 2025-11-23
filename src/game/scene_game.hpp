@@ -137,7 +137,7 @@ struct MathQuestion {
 	TileCoord coords[3];
 
 	// Tile tile jawaban (dalam koordinat piksel).
-	GameComponents::Coordinate coords_pixel[3];
+	raylib::Vector2 coords_pixel[3];
 
 	// Jawaban (dalam string; untuk display);
 	string answers_str[3];
