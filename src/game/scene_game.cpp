@@ -786,19 +786,20 @@ void GameScene::draw() {
 		this->status_bar.draw();
 		this->status_bar.draw_stats();
 
+		switch(this->math_status) {
+			case QUESTION:
+				this->status_bar.draw_question();
+				this->math.draw_answers();
+				break;
+			case FEEDBACK:
+				this->status_bar.draw_feedback(this->last_food);
+				break;
+		}
+
+		this->player.draw();
+
 		switch (this->player.game_over) {
 			case FALSE:
-				switch(this->math_status) {
-					case QUESTION:
-						this->status_bar.draw_question();
-						this->math.draw_answers();
-					break;
-					case FEEDBACK:
-						this->status_bar.draw_feedback(this->last_food);
-					break;
-				}
-
-				this->player.draw();
 				break;
 
 			case CRASH_SELF:
