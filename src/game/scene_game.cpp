@@ -601,19 +601,15 @@ GameScene::GameScene() {
 }
 
 void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager) {
+	this->game_over = FALSE;
 	this->math.init(game_font);
 	this->status_bar.init(game_font, &this->math.q_now, &this->player_stats);
 	this->player_stats.init(game_font);
 	this->game_state_manager = game_state_manager;
 }
 
-void GameScene::update() {
-	if (this->is_game_started) {
-		this->status_bar.update();
-		this->player.update();
-
+void GameScene::food_check() {
 		optional<Food> food_collided = this->math.q_now.check_collision(this->player.head_pos, this->player.snake_body_radius);
-		// Kalau kita menabrak makanan
 		if (food_collided.has_value()){
 			long long pts = get_pts(food_collided.value());
 			this->player_stats.pts = max(static_cast<long long>(0), this->player_stats.pts + pts); // Jangan bikin skor negatif
@@ -622,10 +618,20 @@ void GameScene::update() {
 				this->player.add_length();
 			} else {
 				this->player_stats.lives -= 1;
+				if (this->player_stats.lives == 0) {
+					this->game_over = BAD_FOOD;
+				}
 			}
 			this->math.generate_new_question();
 		}
+}
+void GameScene::update() {
+	if (this->is_game_started) {
+		this->status_bar.update();
+		this->player.update();
 
+		// Kalau kita menabrak makanan
+		this->food_check();
 	} else {
 		this->explosion_animation.update();
 		if (this->explosion_animation.ended()) {
@@ -635,6 +641,7 @@ void GameScene::update() {
 		}
 	}
 }
+
 
 void GameScene::draw() {
 	if (this->is_game_started) {

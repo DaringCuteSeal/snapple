@@ -38,6 +38,11 @@ enum Food {
 	GOLDEN_APPLE_PIE
 };
 
+enum GameOver {
+	FALSE,
+	CRASHING,
+	BAD_FOOD
+};
 
 Food get_food(Difficulty difficulty);
 long long get_pts(Food food);
@@ -312,10 +317,12 @@ private:
 	Player player;
 	raylib::Font* game_font;
 	GameComponents::GameStateManager* game_state_manager;
+	GameOver game_over;
 
 public:
 	GameScene();
 	void init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager);
 	void draw();
 	void update();
+	void food_check();
 };
