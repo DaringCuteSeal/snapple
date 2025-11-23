@@ -782,12 +782,12 @@ void GameScene::update() {
 
 void GameScene::draw() {
 	if (this->is_game_started) {
+		this->ground_texture.Draw(0, 0);
+		this->status_bar.draw();
+		this->status_bar.draw_stats();
+
 		switch (this->player.game_over) {
 			case FALSE:
-				this->ground_texture.Draw(0, 0);
-				this->status_bar.draw();
-				this->status_bar.draw_stats();
-
 				switch(this->math_status) {
 					case QUESTION:
 						this->status_bar.draw_question();
