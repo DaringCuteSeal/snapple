@@ -3,7 +3,7 @@
 #include <raymath.h>
 #include <string>
 
-using std::to_string;
+using std::to_string, std::max;
 
 // TODO: jangan overlap player
 TileCoord get_random_tile_coord() {
@@ -28,6 +28,10 @@ Food get_food(Difficulty difficulty) {
 		case POW_SQRT_EASY:
 		case POW_SQRT_HARD:
 			return GOLDEN_APPLE_PIE;
+
+		default:
+			return APPLE;
+			break;
 	}
 }
 
@@ -36,14 +40,21 @@ long long get_pts(Food food) {
 		case BAD_APPLE:
 			return -10;
 			break;
+
 		case APPLE:
 			return 10;
 			break;
+
 		case APPLE_PIE:
 			return 20;
 			break;
+
 		case GOLDEN_APPLE_PIE:
 		return 50;
+			break;
+
+		default:
+			return 10;
 			break;
 	}
 }
@@ -100,6 +111,9 @@ void AppleExplosion::update() {
 
 PlayerStats::PlayerStats()  {
 	this->heart_texture.Load(this->heart_texture_file);
+	this->pts = 0;
+	this->length = (1 + SNAKE_INITIAL_LENGTH) / SNAKE_UNIT_LENGTH;
+	this->lives = LIVES;
 }
 
 void PlayerStats::init (raylib::Font* game_font)  {
@@ -116,7 +130,7 @@ void PlayerStats::draw_lives(int x, int y) {
 }
 
 void PlayerStats::draw_length(int x, int y) {
-	DrawTextEx(*(this->game_font), "Length: " + to_string(this->length / SNAKE_LENGTH_FACTOR), raylib::Vector2(x, y), 50, 1.0, this->text_color);
+	DrawTextEx(*(this->game_font), "Length: " + to_string(this->length / SNAKE_UNIT_LENGTH), raylib::Vector2(x, y), 50, 1.0, this->text_color);
 }
 
 void PlayerStats::draw_pts(int x, int y) {
@@ -127,12 +141,20 @@ void MathQuestion::draw_question(int x, int y, raylib::Font* game_font, Color co
 	DrawTextEx(*game_font, this->display, raylib::Vector2(x, y), 60, 1.0, color);
 }
 
+optional<Food> MathQuestion::check_collision(raylib::Vector2 head_location, float head_radius) {
+	for (size_t i = 0; i < 3; i++) {
+		if (!CheckCollisionCircles(this->coords_pixel[i], head_radius, head_location, head_radius)) continue;
+		if (i == 0) return get_food(this->difficulty); else return BAD_APPLE;
+	}
+	return nullopt;
+}
 
 MathQuestionDisplay::MathQuestionDisplay() {
 	// Generate question langsung biar gak ada masalah null pointer kalo
 	// `this->get_question()` dipanggil.
 	this->generate_new_question();
 }
+
 void MathQuestionDisplay::init(raylib::Font* game_font) {
 	this->game_font = game_font;
 }
@@ -193,9 +215,12 @@ void MathQuestionDisplay::generate_new_question() {
 		this->q_now.answers[0] = add ? (lhs+rhs) : (lhs-rhs);
 		this->q_now.answers[1] = add ? (lhs+rhs + diff_tens) : (lhs-rhs + diff_tens);
 
-		// opsi ke-3 yang susah: satuannya dibalik (buat pengurangan) -> menjebak
-		// kalau tadi penambahan kita balik aja `diff_tens` yang sebelumnya.
-		this->q_now.answers[2] = add ? (lhs+rhs - diff_tens) : ((lhs_tens + rhs_ones) - (rhs_tens + lhs_ones));
+		// opsi ke-3 yang susah: satuannya dibalik (buat pengurangan) ->
+		// menjebak kalau tadi penambahan kita balik aja `diff_tens`
+		// yang sebelumnya. **Tapi kalau satuan lhs sama dengan satuan
+		// rhs, ini bakal sama kayak jawaban aslinya. in that case, kita
+		// balik diff_tens kayak pertambahan.
+		this->q_now.answers[2] = add ? (lhs+rhs - diff_tens) : (rhs_ones == lhs_ones ? (lhs+rhs - diff_tens) : ((lhs_tens + rhs_ones) - (rhs_tens + lhs_ones)));
 
 		this->q_now.difficulty = ADD_SUB_HARD;
 
@@ -371,7 +396,7 @@ void MathQuestionDisplay::generate_new_question() {
 
 	// Koordinat asli (dalam piksel)
 	for (size_t i = 0; i < 3; i++) {
-		this->q_now.coords_pixel[i] = q_now.coords[i].to_vector2().Add({static_cast<float>(((60 - q_now.answers_str[i].length()*12)/2)), 15});
+		this->q_now.coords_pixel[i] = q_now.coords[i].to_vector2().Add({static_cast<float>(((TILE_DIMENSION - q_now.answers_str[i].length()*12)/2)), 15});
 	}
 }
 
@@ -379,10 +404,6 @@ void MathQuestionDisplay::draw_answers() {
 	for (size_t i = 0; i < 3; i++) {
 		DrawTextEx(*(this->game_font), this->q_now.answers_str[i], this->q_now.coords_pixel[i], 30, 1.0, this->food_color);
 	}
-}
-
-void check_collision(raylib::Vector2 head_location) {
-
 }
 
 StatusBar::StatusBar() {
@@ -395,17 +416,17 @@ void StatusBar::fall() {
 	this->pos = {this->min_statusbar_pos_y, 0};
 }
 
-void StatusBar::init(raylib::Font* game_font, MathQuestion* math_question) {
+void StatusBar::init(raylib::Font* game_font, MathQuestion* math_question, PlayerStats* stats) {
 	this->game_font = game_font;
-	this->stats.init(game_font);
 	this->math_question = math_question;
+	this->player_stats = stats;
 }
 
 void StatusBar::draw() {
 	this->texture.Draw(this->pos.col, this->pos.row);
-	this->stats.draw_lives(this->pos.col + this->lives_pos.col, this->pos.row + this->lives_pos.row);
-	this->stats.draw_pts(this->pos.col + this->pts_pos.col, this->pos.row + this->pts_pos.row);
-	this->stats.draw_length(this->pos.col + this->snake_length_pos.col, this->pos.row + this->snake_length_pos.row);
+	this->player_stats->draw_lives(this->pos.col + this->lives_pos.col, this->pos.row + this->lives_pos.row);
+	this->player_stats->draw_pts(this->pos.col + this->pts_pos.col, this->pos.row + this->pts_pos.row);
+	this->player_stats->draw_length(this->pos.col + this->snake_length_pos.col, this->pos.row + this->snake_length_pos.row);
 	this->math_question->draw_question(this->pos.col + this->question_pos.col, this->pos.row + this->question_pos.row, this->game_font, this->math_question_color);
 }
 
@@ -422,7 +443,7 @@ Player::Player() {
 	this->snake_head_d.Load(this->texture_snake_head_d);
 	this->snake_head_r.Load(this->texture_snake_head_r);
 	this->head_pos = this->initial_pos.to_coord().to_vector2();
-	this->controllable = true;
+	this->controllable = false;
 }
 
 void Player::create_snake() {
@@ -439,6 +460,13 @@ void Player::create_snake() {
 	for (size_t i = 0; i < SNAKE_INITIAL_LENGTH; i++) {
 		this->points.push_back({x, y});
 		x += this->snake_point_radius;
+	}
+}
+
+void Player::add_length() {
+	raylib::Vector2 last_vector = this->points[this->points.size()-1];
+	for (size_t i = 0; i < SNAKE_UNIT_LENGTH; i++){
+		this->points.push_back(last_vector);
 	}
 }
 
@@ -468,15 +496,18 @@ void Player::move() {
 			this->head_pos.x += this->snake_point_radius;
 			break;
 	}
+}
 
+raylib::Vector2 Player::get_head_pos_center() {
+	float div_2 = TILE_DIMENSION/2.0; // cast ke float di awal
+	return raylib::Vector2 { this-> head_pos.x + div_2, this->head_pos.y + div_2 };
 }
 
 bool Player::check_collision_self() {
 	size_t points_size = this->points.size();
-	float div_2 = TILE_DIMENSION/2.0; // cast ke float di awal
-	size_t init = ceil(div_2/this->snake_point_radius);
+	size_t init = ceil(TILE_DIMENSION/2.0/this->snake_point_radius);
 	for (size_t i = init; i < points_size; i++) {
-		if (CheckCollisionCircles(raylib::Vector2 {this->head_pos.x + div_2, this->head_pos.y + div_2}, this->snake_body_radius, this->points[i], this->snake_body_radius)) return true;
+		if (CheckCollisionCircles(get_head_pos_center(), this->snake_body_radius, this->points[i], this->snake_body_radius)) return true;
 	}
 	return false;
 }
@@ -512,6 +543,7 @@ void Player::update() {
 
 	// Hanya terjadi sekali tiap main.
 	if (this->head_pos.x <= TILE_COLUMNS * TILE_DIMENSION - TILE_DIMENSION) {
+		this->controllable = true;
 		this->try_check_collision = true;
 	};
 
@@ -565,11 +597,13 @@ GameScene::GameScene() {
 	this->ground_texture_apple.Load(this->ground_texture_apple_file);
 	this->ground_texture.Load(this->ground_texture_file);
 	this->player.create_snake();
+	this->is_game_started = false;
 }
 
 void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager) {
 	this->math.init(game_font);
-	this->status_bar.init(game_font, &this->math.q_now);
+	this->status_bar.init(game_font, &this->math.q_now, &this->player_stats);
+	this->player_stats.init(game_font);
 	this->game_state_manager = game_state_manager;
 }
 
@@ -577,6 +611,21 @@ void GameScene::update() {
 	if (this->is_game_started) {
 		this->status_bar.update();
 		this->player.update();
+
+		optional<Food> food_collided = this->math.q_now.check_collision(this->player.head_pos, this->player.snake_body_radius);
+		// Kalau kita menabrak makanan
+		if (food_collided.has_value()){
+			long long pts = get_pts(food_collided.value());
+			this->player_stats.pts = max(static_cast<long long>(0), this->player_stats.pts + pts); // Jangan bikin skor negatif
+			if (pts > 0) {
+				this->player_stats.length += SNAKE_UNIT_LENGTH;
+				this->player.add_length();
+			} else {
+				this->player_stats.lives -= 1;
+			}
+			this->math.generate_new_question();
+		}
+
 	} else {
 		this->explosion_animation.update();
 		if (this->explosion_animation.ended()) {

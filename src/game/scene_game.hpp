@@ -3,8 +3,9 @@
 #include <cstdint>
 #include <optional>
 
+#define LIVES 3
 #define SNAKE_INITIAL_LENGTH 50 - 1 // gak termasuk kepala
-#define SNAKE_LENGTH_FACTOR 5 // banyak panjang untuk ditambah ketika makan angka
+#define SNAKE_UNIT_LENGTH 5 // banyak panjang untuk ditambah ketika makan angka
                                                                    // haha makan angka huh ..
 #define TILE_ROWS 17
 #define TILE_COLUMNS 32
@@ -102,15 +103,15 @@ private:
 	raylib::Texture2D heart_texture;
 public:
 	PlayerStats();
-	raylib::Font* game_font;
+	raylib::Font* game_font; // harus diinisialisasi
 
 	// Sisa nyawa pemain.
-	uint8_t lives = 3;
+	uint8_t lives = LIVES;
 
 	// TODO: atau ini harusnya ga variabel sendiri, biar kita bisa
 	// player_segments.length() gitu? tapi kayaknya gak optimal kalau gitu karena
 	// variabel ini dibaca setiap update() scene.
-	uint length = (1 + SNAKE_INITIAL_LENGTH) / SNAKE_LENGTH_FACTOR;
+	uint length = (1 + SNAKE_INITIAL_LENGTH) / SNAKE_UNIT_LENGTH;
 
 	// Skor pemain.
 	long long pts = 0;
@@ -147,6 +148,9 @@ struct MathQuestion {
 
 	// Tulis pertanyaannya.
 	void draw_question(int x, int y, raylib::Font* game_font, Color color);
+
+	// Cek tabrakan dengan makanan.
+	optional<Food> check_collision(raylib::Vector2 head_location, float head_radius);
 };
 
 /** Kelas yang mengatur display matematika. Ada bagian untuk widget di bar dan
@@ -178,9 +182,6 @@ public:
 	// Generate sebuah pertanyaan dan simpan ke state `this->q_now`.
 	void generate_new_question();
 
-	// Cek tabrakan dengan makanan dan tambah poin, panjang ular, dsb. jika ya.
-	void check_collision(raylib::Vector2 head_location);
-
 	// Gambar jawaban-jawaban
 	void draw_answers();
 };
@@ -194,9 +195,6 @@ private:
 	const GameComponents::Coordinate snake_length_pos = {3, 1400};
 
 	const Color math_question_color = ORANGE;
-
-	// Statistik pengguna.
-	PlayerStats stats;
 
 	// Posisi untuk menyembunyikan statusbar.
 	const int min_statusbar_pos_y = -80;
@@ -217,11 +215,14 @@ private:
 	raylib::Font* game_font;
 
 public:
+	// Statistik pengguna.
+	PlayerStats* player_stats;
+
 	// Posisi statusbar.
 	GameComponents::Coordinate pos = {0, 0};
 
 	StatusBar();
-	void init(raylib::Font* game_font, MathQuestion* math_question);
+	void init(raylib::Font* game_font, MathQuestion* math_question, PlayerStats* player_stats);
 	void draw();
 	void update();
 	void fall();
@@ -233,8 +234,6 @@ private:
 	 * Catatan: harus merupakan faktor dari TILE_DIMENSION.
 	*/
 	const float snake_point_radius = TILE_DIMENSION / 15.0;
-
-	const float snake_body_radius = TILE_DIMENSION / 5.0;
 
 	const Color snake_color = Color { .r = 87, .g = 141, .b = 237, .a = 255 };
 
@@ -282,17 +281,21 @@ private:
 	bool active = true;
 
 public:
+	const float snake_body_radius = TILE_DIMENSION / 5.0;
+
 	bool controllable = false;
 
 	// Posisi kepala.
 	raylib::Vector2 head_pos;
 
 	Player();
+	raylib::Vector2 get_head_pos_center();
 	void create_snake();
 	void check_collision();
 	void update();
 	void draw();
 	void unqueue_turn();
+	void add_length();
 };
 
 class GameScene : public GameComponents::Scene {
