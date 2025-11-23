@@ -2,7 +2,7 @@
 CXX = g++
 
 # Compiler flags
-CXXFLAGS = -O3 -Wall -I./deps/raylib-cpp/include -I./deps/raudio/src -g
+CXXFLAGS = -O3 -Wall -I./deps/raylib-cpp/include -I./deps/raudio/src
 
 # Linker flags
 LDFLAGS = -lraylib

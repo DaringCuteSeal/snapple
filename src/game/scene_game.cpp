@@ -88,6 +88,10 @@ AppleExplosion::AppleExplosion() {
 	this->time_per_frame = 1.0/this->fps;
 }
 
+void AppleExplosion::reset() {
+	this->current_frame = 0;
+}
+
 bool AppleExplosion::show_apple() {
 	return this->current_frame <= this->frame_apple_disappear;
 }
@@ -111,14 +115,17 @@ void AppleExplosion::update() {
 
 PlayerStats::PlayerStats()  {
 	this->heart_texture.Load(this->heart_texture_file);
+}
+
+void PlayerStats::reset() {
 	this->pts = 0;
 	this->length = (1 + SNAKE_INITIAL_LENGTH) / SNAKE_UNIT_LENGTH;
 	this->lives = LIVES;
 }
 
 void PlayerStats::init (raylib::Font* game_font)  {
-	this->length = 1 + SNAKE_INITIAL_LENGTH;
 	this->game_font = game_font;
+	this->reset();
 }
 
 void PlayerStats::draw_lives(int x, int y) {
@@ -130,7 +137,7 @@ void PlayerStats::draw_lives(int x, int y) {
 }
 
 void PlayerStats::draw_length(int x, int y) {
-	DrawTextEx(*(this->game_font), "Length: " + to_string(this->length / SNAKE_UNIT_LENGTH), raylib::Vector2(x, y), 50, 1.0, this->text_color);
+	DrawTextEx(*(this->game_font), "Length: " + to_string(this->length), raylib::Vector2(x, y), 50, 1.0, this->text_color);
 }
 
 void PlayerStats::draw_pts(int x, int y) {
@@ -143,20 +150,22 @@ void MathQuestion::draw_question(int x, int y, raylib::Font* game_font, Color co
 
 optional<Food> MathQuestion::check_collision(raylib::Vector2 head_location, float head_radius) {
 	for (size_t i = 0; i < 3; i++) {
-		if (!CheckCollisionCircles(this->coords_pixel[i], head_radius, head_location, head_radius)) continue;
+		if (!CheckCollisionCircles(this->coords_pixel[i], head_radius*2, head_location, head_radius)) continue;
 		if (i == 0) return get_food(this->difficulty); else return BAD_APPLE;
 	}
 	return nullopt;
 }
 
 MathQuestionDisplay::MathQuestionDisplay() {
-	// Generate question langsung biar gak ada masalah null pointer kalo
-	// `this->get_question()` dipanggil.
-	this->generate_new_question();
 }
 
 void MathQuestionDisplay::init(raylib::Font* game_font) {
 	this->game_font = game_font;
+	this->reset();
+}
+
+void MathQuestionDisplay::reset() {
+	this->generate_new_question();
 }
 
 // Generate pertanyaan matematika baru.
@@ -407,8 +416,11 @@ void MathQuestionDisplay::draw_answers() {
 }
 
 StatusBar::StatusBar() {
-	this->pos = {this->min_statusbar_pos_y, 0};
 	this->texture.Load(this->texture_file);
+}
+
+void StatusBar::reset() {
+	this->pos = {this->min_statusbar_pos_y, 0};
 }
 
 void StatusBar::fall() {
@@ -420,6 +432,7 @@ void StatusBar::init(raylib::Font* game_font, MathQuestion* math_question, Playe
 	this->game_font = game_font;
 	this->math_question = math_question;
 	this->player_stats = stats;
+	this->reset();
 }
 
 void StatusBar::draw() {
@@ -442,6 +455,11 @@ Player::Player() {
 	this->snake_head_l.Load(this->texture_snake_head_l);
 	this->snake_head_d.Load(this->texture_snake_head_d);
 	this->snake_head_r.Load(this->texture_snake_head_r);
+	this->reset();
+}
+
+void Player::reset() {
+	this->game_over = FALSE;
 	this->head_pos = this->initial_pos.to_coord().to_vector2();
 	this->controllable = false;
 }
@@ -517,7 +535,12 @@ bool Player::check_collision_corners() {
 }
 
 void Player::check_collision() {
-	if (this->check_collision_self() || this->check_collision_corners()) {
+	if (this->check_collision_self()) {
+		this->game_over = CRASH_SELF;
+		this->active = false;
+	}
+	if (this->check_collision_corners()) {
+		this->game_over = CRASH_WALL;
 		this->active = false;
 	};
 }
@@ -559,6 +582,8 @@ void Player::update() {
 		}
 	}
 
+	// Aku tidak bisa memutuskan
+	// Uncomment kode di bawah ini untuk membuat ularnya bergerak sesuai tiles:
 	// if (int(floor(this->head_pos.y)) % TILE_DIMENSION == 0
 	// && int(floor(this->head_pos.x)) % TILE_DIMENSION == 0) {
 	this->unqueue_turn();
@@ -598,42 +623,77 @@ void Player::draw() {
 GameScene::GameScene() {
 	this->ground_texture_apple.Load(this->ground_texture_apple_file);
 	this->ground_texture.Load(this->ground_texture_file);
-	this->player.create_snake();
-	this->is_game_started = false;
+	this->dead_bad_food_texture.Load(this->dead_bad_food_file);
+	this->dead_crash_self_texture.Load(this->dead_crash_self_file);
+	this->dead_crash_wall_texture.Load(this->dead_crash_wall_file);
+	this->dead_popup_x = (SCREEN_WIDTH - this->dead_popup_dimension_x)/2;
+	this->dead_popup_y = (SCREEN_HEIGHT - this->dead_popup_dimension_y)/2;
 }
 
-void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager) {
-	this->game_over = FALSE;
+void GameScene::reset(bool apple_explode) {
+	if (apple_explode){
+		this->explosion_animation.reset();
+	}
+	this->player.reset();
+	this->player.create_snake();
+	this->status_bar.player_stats->reset();
+	this->status_bar.reset();
+	this->is_game_started = false;
+	this->math.reset();
+}
+
+void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager, function<void()> menu_callback) {
 	this->math.init(game_font);
+	this->menu_callback = menu_callback;
 	this->status_bar.init(game_font, &this->math.q_now, &this->player_stats);
 	this->player_stats.init(game_font);
 	this->game_state_manager = game_state_manager;
+	this->reset(true);
 }
 
 void GameScene::food_check() {
-		optional<Food> food_collided = this->math.q_now.check_collision(this->player.head_pos, this->player.snake_body_radius);
-		if (food_collided.has_value()){
-			long long pts = get_pts(food_collided.value());
-			this->player_stats.pts = max(static_cast<long long>(0), this->player_stats.pts + pts); // Jangan bikin skor negatif
-			if (pts > 0) {
-				this->player_stats.length += SNAKE_UNIT_LENGTH;
-				this->player.add_length();
-			} else {
-				this->player_stats.lives -= 1;
-				if (this->player_stats.lives == 0) {
-					this->game_over = BAD_FOOD;
-				}
+	optional<Food> food_collided = this->math.q_now.check_collision(this->player.head_pos, this->player.snake_body_radius);
+	if (food_collided.has_value()){
+		long long pts = get_pts(food_collided.value());
+
+		// Jangan bikin skor negatif
+		this->player_stats.pts = max(static_cast<long long>(0), this->player_stats.pts + pts);
+		if (pts > 0) {
+			this->player_stats.length += 1;
+			this->player.add_length();
+		} else {
+			this->player_stats.lives -= 1;
+			if (this->player_stats.lives == 0) {
+				this->draw(); // buat update statusbar untuk terakhir kalinya
+				this->player.game_over = BAD_FOOD;
 			}
-			this->math.generate_new_question();
 		}
+		this->math.generate_new_question();
+	}
 }
+
 void GameScene::update() {
 	if (this->is_game_started) {
-		this->status_bar.update();
-		this->player.update();
+		switch (this->player.game_over) {
+			case FALSE:
+				this->status_bar.update();
+				this->player.update();
 
-		// Kalau kita menabrak makanan
-		this->food_check();
+				// Kalau kita menabrak makanan
+				this->food_check();
+				break;
+			case CRASH_SELF:
+			case BAD_FOOD:
+			case CRASH_WALL:
+				if (IsKeyPressed(KEY_R)) {
+					this->reset(false);
+				} else if (IsKeyPressed(KEY_M)) {
+					this->menu_callback();
+				}
+				break;
+			default:
+				break;
+		}
 	} else {
 		this->explosion_animation.update();
 		if (this->explosion_animation.ended()) {
@@ -646,10 +706,27 @@ void GameScene::update() {
 
 void GameScene::draw() {
 	if (this->is_game_started) {
-		this->ground_texture.Draw(0, 0);
-		this->status_bar.draw();
-		this->math.draw_answers();
-		this->player.draw();
+		switch (this->player.game_over) {
+			case FALSE:
+				this->ground_texture.Draw(0, 0);
+				this->status_bar.draw();
+				this->math.draw_answers();
+				this->player.draw();
+				break;
+
+			case CRASH_SELF:
+				this->dead_crash_self_texture.Draw(this->dead_popup_x, this->dead_popup_y);
+				break;
+			case BAD_FOOD:
+				this->dead_bad_food_texture.Draw(this->dead_popup_x, this->dead_popup_y);
+				break;
+			case CRASH_WALL:
+				this->dead_crash_wall_texture.Draw(this->dead_popup_x, this->dead_popup_y);
+				break;
+			default:
+				break;
+
+		}
 	} else {
 		this->explosion_animation.show_apple()
 			? this->ground_texture_apple.Draw(0, 0)

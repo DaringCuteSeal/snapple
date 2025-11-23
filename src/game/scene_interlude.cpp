@@ -16,6 +16,11 @@ void InterludeScene::init(GameComponents::GameStateManager* game_state_manager, 
 	this->start_game_callback = start_game_callback;
 }
 
+void InterludeScene::reset() {
+	this->is_ready_to_start_game = false;
+	this->current_frame = 0;
+}
+
 void InterludeScene::draw() {
 	this->background.Draw(0, 0);
 	this->interlude_animation[this->current_frame].Draw(0, 0);

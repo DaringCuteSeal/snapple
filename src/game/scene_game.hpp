@@ -1,5 +1,6 @@
 #include "../prelude.hpp"
 #include "../backend/components.hpp"
+#include "../cfg.hpp"
 #include <cstdint>
 #include <optional>
 
@@ -40,8 +41,9 @@ enum Food {
 
 enum GameOver {
 	FALSE,
-	CRASHING,
-	BAD_FOOD
+	CRASH_WALL,
+	CRASH_SELF,
+	BAD_FOOD,
 };
 
 Food get_food(Difficulty difficulty);
@@ -93,6 +95,8 @@ class AppleExplosion {
 public:
 	AppleExplosion();
 
+	// Putar ulang
+	void reset();
 	bool ended();
 	bool show_apple();
 	void draw();
@@ -121,6 +125,7 @@ public:
 	// Skor pemain.
 	long long pts = 0;
 
+	void reset();
 	void turn(Direction direction);
 	void init(raylib::Font* game_font);
 	void draw_lives(int x, int y);
@@ -183,6 +188,7 @@ public:
 	MathQuestion q_now;
 
 	void init(raylib::Font* game_font);
+	void reset();
 
 	// Generate sebuah pertanyaan dan simpan ke state `this->q_now`.
 	void generate_new_question();
@@ -227,6 +233,7 @@ public:
 	GameComponents::Coordinate pos = {0, 0};
 
 	StatusBar();
+	void reset();
 	void init(raylib::Font* game_font, MathQuestion* math_question, PlayerStats* player_stats);
 	void draw();
 	void update();
@@ -287,15 +294,20 @@ private:
 	bool active = true;
 
 public:
+	GameOver game_over;
+
 	const float snake_body_radius = TILE_DIMENSION / 5.0;
 
 	bool controllable = false;
+	
+	void reset();
 
 	// Posisi kepala.
 	raylib::Vector2 head_pos;
 
 	Player();
 	raylib::Vector2 get_head_pos_center();
+	void init();
 	void create_snake();
 	void check_collision();
 	void update();
@@ -307,10 +319,23 @@ public:
 class GameScene : public GameComponents::Scene {
 private:
 	AppleExplosion explosion_animation;
+	const char* dead_crash_wall_file = "assets/dead_crash_wall.png";
+	const char* dead_crash_self_file = "assets/dead_crash_self.png";
+	const char* dead_bad_food_file = "assets/dead_bad_food.png";
 	const char* ground_texture_file = "assets/ground.png";
 	const char* ground_texture_apple_file = "assets/interlude_animation/37.png";
-	raylib::Texture2D ground_texture_apple;
+
+	const size_t dead_popup_dimension_y = 587;
+	const size_t dead_popup_dimension_x = 970;
+
+	size_t dead_popup_y; // Diitung ketika konstruksi kelas
+	size_t dead_popup_x; // Diitung ketika konstruksi kelas
+
+	raylib::Texture2D dead_crash_wall_texture;
+	raylib::Texture2D dead_crash_self_texture;
+	raylib::Texture2D dead_bad_food_texture;
 	raylib::Texture2D ground_texture;
+	raylib::Texture2D ground_texture_apple;
 	bool is_game_started = false;
 	StatusBar status_bar;
 	PlayerStats player_stats;
@@ -318,11 +343,13 @@ private:
 	Player player;
 	raylib::Font* game_font;
 	GameComponents::GameStateManager* game_state_manager;
-	GameOver game_over;
+
+	function<void()> menu_callback;
 
 public:
 	GameScene();
-	void init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager);
+	void reset(bool apple_explode);
+	void init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager, function<void()> menu_callback);
 	void draw();
 	void update();
 	void food_check();

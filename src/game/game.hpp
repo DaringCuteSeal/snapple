@@ -23,4 +23,5 @@ public:
 	void draw();
 	void start_game_interlude();
 	void start_game();
+	void go_back_to_menu();
 };

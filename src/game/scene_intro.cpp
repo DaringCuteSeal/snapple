@@ -32,6 +32,20 @@ void IntroScene::init(raylib::Font* game_font, GameComponents::GameStateManager*
 	this->start_interlude_callback = start_interlude_callback;
 }
 
+void IntroScene::reset() {
+	this->is_looping = true;
+	this->ready_to_start_game = false;
+	this->show_hint_text = true;
+	this->active = true;
+}
+
+void IntroScene::replay() {
+	this->is_looping = false;
+	this->ready_to_start_game = false;
+	this->show_hint_text = false;
+	this->active = true;
+}
+
 void IntroScene::letters_bounce_down() {
 	size_t y = this->letters_y_min;
 	for (size_t i = 0; i < this->n_letters; i++) {

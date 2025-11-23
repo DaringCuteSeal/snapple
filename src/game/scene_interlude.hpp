@@ -55,10 +55,11 @@ private:
 	raylib::Texture2D background;
 	GameComponents::GameStateManager* game_state_manager;
 	function<void()> start_game_callback;
-	bool is_ready_to_start_game; // Must be set to false to restart TODO: write the restart method
+	bool is_ready_to_start_game;
 
 public:
 	InterludeScene();
+	void reset();
 	void init(GameComponents::GameStateManager* game_state_manager, function<void()> start_game_callback);
 	void draw();
 	void update();

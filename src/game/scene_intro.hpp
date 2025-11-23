@@ -229,7 +229,7 @@ private:
 	double time_per_frame;
 	size_t current_frame = 0;
 	double last_time;
-	bool is_looping; // Must be set to false to restart TODO: write the restart method
+	bool is_looping; // Must be set to false to restart
 	bool ready_to_start_game; // Must be set to false to restart
 	bool show_hint_text; // Must be set to false to restart
 	bool active; // Must be set to true to restart
@@ -241,6 +241,10 @@ private:
 	GameComponents::GameStateManager* game_state_manager;
 
 public:
+	// Main animasi dari awal.
+	void replay();
+	// Reset, tanpa main animasi dari awal.
+	void reset();
 	IntroScene();
 
 	// gara gara kalo ada kelas yang ada kelas lain, maka kelas yang
