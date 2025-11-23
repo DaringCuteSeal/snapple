@@ -79,7 +79,7 @@ void IntroScene::draw() {
 
 	if (this->show_hint_text){
 		// kasih hint mulai main
-		DrawTextEx(*(this->game_font), string("SPASI untuk mulai..."), raylib::Vector2(1450, 1011), 60, 1.0, {255, 255, 255, this->hint_text_alpha});
+		DrawTextEx(*(this->game_font), string("SPACE to start..."), raylib::Vector2(1450, 1011), 60, 1.0, {255, 255, 255, this->hint_text_alpha});
 	}
 }
 

@@ -116,6 +116,6 @@ Coordinate Coordinate::add_col(int c) {
 	return Coordinate { this->row, this->col + c };
 };
 
-raylib::Vector2 Coordinate::to_vector2() {
+raylib::Vector2 Coordinate::to_vector2() const {
 	return raylib::Vector2 { float(this->col), float(this->row) };
 };

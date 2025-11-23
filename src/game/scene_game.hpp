@@ -128,9 +128,9 @@ public:
 	void reset();
 	void turn(Direction direction);
 	void init(raylib::Font* game_font);
-	void draw_lives(int x, int y);
-	void draw_pts(int x, int y);
-	void draw_length(int x, int y);
+	void draw_lives(raylib::Vector2 pos);
+	void draw_pts(raylib::Vector2 pos);
+	void draw_length(raylib::Vector2 pos);
 };
 
 struct MathQuestion {
@@ -157,7 +157,7 @@ struct MathQuestion {
 	Difficulty difficulty;
 
 	// Tulis pertanyaannya.
-	void draw_question(int x, int y, raylib::Font* game_font, Color color);
+	void draw_question(raylib::Vector2 pos, raylib::Font* game_font, Color color);
 
 	// Cek tabrakan dengan makanan.
 	optional<Food> check_collision(raylib::Vector2 head_location, float head_radius);
@@ -197,18 +197,36 @@ public:
 	void draw_answers();
 };
 
+enum MathDisplayStatus {
+	QUESTION,
+	FEEDBACK
+};
+
 class StatusBar {
 private:
 	// Koordinat komponen-komponen (relatif dengan `this->pos`).
-	const GameComponents::Coordinate lives_pos = {10, 0};
-	const GameComponents::Coordinate pts_pos = {3, 330};
-	const GameComponents::Coordinate question_pos = {3, 815};
-	const GameComponents::Coordinate snake_length_pos = {3, 1400};
+	const raylib::Vector2 lives_pos = {0, 10};
+	const raylib::Vector2 pts_pos = {330, 3};
+	const raylib::Vector2 question_pos = {815, 3};
+	const raylib::Vector2 snake_length_pos = {1400, 3};
+	const raylib::Vector2 answer_food_tex_pos = {1000, -2};
+
+	const char* apple_texture_file = "assets/apple.png";
+	const char* bad_apple_texture_file = "assets/apple_bad.png";
+	const char* pie_texture_file = "assets/pie.png";
+	const char* golden_pie_texture_file = "assets/golden_pie.png";
+
+	raylib::Texture2D apple_texture;
+	raylib::Texture2D bad_apple_texture;
+	raylib::Texture2D pie_texture;
+	raylib::Texture2D golden_pie_texture;
 
 	const Color math_question_color = ORANGE;
+	const Color math_feedback_color_correct = GREEN;
+	const Color math_feedback_color_wrong = ORANGE;
 
 	// Posisi untuk menyembunyikan statusbar.
-	const int min_statusbar_pos_y = -80;
+	const float min_statusbar_pos_y = -80;
 
 	// Posisi seharusnya
 	const int pos_y = -5;
@@ -230,12 +248,23 @@ public:
 	PlayerStats* player_stats;
 
 	// Posisi statusbar.
-	GameComponents::Coordinate pos = {0, 0};
+	raylib::Vector2 pos = {0, 0};
 
 	StatusBar();
 	void reset();
 	void init(raylib::Font* game_font, MathQuestion* math_question, PlayerStats* player_stats);
+
+	// Gambar bar
 	void draw();
+
+	// Tulis statistik ke bar
+	void draw_stats();
+
+	// Tulis pertanyaan matematika ke bar
+	void draw_question();
+
+	// Tulis feedback jawaban ke bar
+	void draw_feedback(Food food);
 	void update();
 	void fall();
 };
@@ -344,6 +373,13 @@ private:
 	raylib::Font* game_font;
 	GameComponents::GameStateManager* game_state_manager;
 
+	// Status dari pertanyaan matematika.
+	MathDisplayStatus math_status;
+
+	// Makanan terakhir yang didapat.
+	Food last_food;
+
+	// Callback untuk balik ke main menu game.
 	function<void()> menu_callback;
 
 public:

@@ -164,7 +164,7 @@ struct Coordinate {
 	Coordinate operator +(const Coordinate& other) const;
 	Coordinate add_row(int r);
 	Coordinate add_col(int c);
-	raylib::Vector2 to_vector2();
+	raylib::Vector2 to_vector2() const;
 };
 
 }

@@ -1,4 +1,5 @@
 #include "scene_game.hpp"
+#include <dbg.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <string>
@@ -128,24 +129,24 @@ void PlayerStats::init (raylib::Font* game_font)  {
 	this->reset();
 }
 
-void PlayerStats::draw_lives(int x, int y) {
-	int x_draw = x;
+void PlayerStats::draw_lives(raylib::Vector2 pos) {
+	int x_draw = pos.x;
 	for (size_t i = 0; i < this->lives; i++){
 		x_draw += this->hearts_gaps;
-		this->heart_texture.Draw(x_draw, y);
+		this->heart_texture.Draw(x_draw, pos.y);
 	}
 }
 
-void PlayerStats::draw_length(int x, int y) {
-	DrawTextEx(*(this->game_font), "Length: " + to_string(this->length), raylib::Vector2(x, y), 50, 1.0, this->text_color);
+void PlayerStats::draw_length(raylib::Vector2 pos) {
+	raylib::DrawTextEx(*(this->game_font), "Length: " + to_string(this->length), pos, 50, 1.0, this->text_color);
 }
 
-void PlayerStats::draw_pts(int x, int y) {
-	DrawTextEx(*(this->game_font), "Pts: " + to_string(this->pts), raylib::Vector2(x, y), 50, 1.0, this->text_color);
+void PlayerStats::draw_pts(raylib::Vector2 pos) {
+	raylib::DrawTextEx(*(this->game_font), "Pts: " + to_string(this->pts), pos, 50, 1.0, this->text_color);
 }
 
-void MathQuestion::draw_question(int x, int y, raylib::Font* game_font, Color color) {
-	DrawTextEx(*game_font, this->display, raylib::Vector2(x, y), 60, 1.0, color);
+void MathQuestion::draw_question(raylib::Vector2 pos, raylib::Font* game_font, Color color) {
+	raylib::DrawTextEx(*game_font, this->display, pos, 60, 1.0, color);
 }
 
 optional<Food> MathQuestion::check_collision(raylib::Vector2 head_location, float head_radius) {
@@ -411,21 +412,25 @@ void MathQuestionDisplay::generate_new_question() {
 
 void MathQuestionDisplay::draw_answers() {
 	for (size_t i = 0; i < 3; i++) {
-		DrawTextEx(*(this->game_font), this->q_now.answers_str[i], this->q_now.coords_pixel[i], 30, 1.0, this->food_color);
+		raylib::DrawTextEx(*(this->game_font), this->q_now.answers_str[i], this->q_now.coords_pixel[i], 30, 1.0, this->food_color);
 	}
 }
 
 StatusBar::StatusBar() {
 	this->texture.Load(this->texture_file);
+	this->apple_texture.Load(this->apple_texture_file);
+	this->bad_apple_texture.Load(this->bad_apple_texture_file);
+	this->pie_texture.Load(this->pie_texture_file);
+	this->golden_pie_texture.Load(this->golden_pie_texture_file);
 }
 
 void StatusBar::reset() {
-	this->pos = {this->min_statusbar_pos_y, 0};
+	this->pos = raylib::Vector2 {0, this->min_statusbar_pos_y};
 }
 
 void StatusBar::fall() {
+	this->pos = raylib::Vector2 {0, this->min_statusbar_pos_y};
 	this->is_falling = true;
-	this->pos = {this->min_statusbar_pos_y, 0};
 }
 
 void StatusBar::init(raylib::Font* game_font, MathQuestion* math_question, PlayerStats* stats) {
@@ -436,17 +441,50 @@ void StatusBar::init(raylib::Font* game_font, MathQuestion* math_question, Playe
 }
 
 void StatusBar::draw() {
-	this->texture.Draw(this->pos.col, this->pos.row);
-	this->player_stats->draw_lives(this->pos.col + this->lives_pos.col, this->pos.row + this->lives_pos.row);
-	this->player_stats->draw_pts(this->pos.col + this->pts_pos.col, this->pos.row + this->pts_pos.row);
-	this->player_stats->draw_length(this->pos.col + this->snake_length_pos.col, this->pos.row + this->snake_length_pos.row);
-	this->math_question->draw_question(this->pos.col + this->question_pos.col, this->pos.row + this->question_pos.row, this->game_font, this->math_question_color);
+	this->texture.Draw(this->pos);
+}
+
+void StatusBar::draw_stats() {
+	this->player_stats->draw_lives(this->pos + this->lives_pos);
+	this->player_stats->draw_pts(this->pos + this->pts_pos);
+	this->player_stats->draw_length(this->pos + this->snake_length_pos);
+}
+
+void StatusBar::draw_question() {
+	this->math_question->draw_question(this->pos + this->question_pos, this->game_font, this->math_question_color);
+}
+
+void StatusBar::draw_feedback(Food food) {
+	switch(food) {
+		case BAD_APPLE:
+			raylib::DrawTextEx(*(this->game_font), "  Wrong!", this->pos + this->question_pos, 50, 1.0, this->math_feedback_color_wrong);
+			this->bad_apple_texture.Draw(this->pos + this->answer_food_tex_pos);
+			break;
+
+		case APPLE:
+			raylib::DrawTextEx(*(this->game_font), "Correct!", this->pos + this->question_pos, 50, 1.0, this->math_feedback_color_correct);
+			this->apple_texture.Draw(this->pos + this->answer_food_tex_pos);
+			break;
+
+		case APPLE_PIE:
+			raylib::DrawTextEx(*(this->game_font), "Correct!", this->pos + this->question_pos, 50, 1.0, this->math_feedback_color_correct);
+			this->pie_texture.Draw(this->pos + this->answer_food_tex_pos);
+			break;
+
+		case GOLDEN_APPLE_PIE:
+			raylib::DrawTextEx(*(this->game_font), "Correct!", this->pos + this->question_pos, 50, 1.0, GOLD);
+			this->golden_pie_texture.Draw(this->pos + this->answer_food_tex_pos);
+			break;
+
+		default:
+			break;
+	}
 }
 
 void StatusBar::update() {
 	if (this->is_falling){
-		if (this->pos.row >= this->pos_y) this->is_falling = false;
-		this->pos.row += this->vy;
+		if (this->pos.y >= this->pos_y) this->is_falling = false;
+		this->pos.y += this->vy;
 	}
 }
 
@@ -639,6 +677,7 @@ void GameScene::reset(bool apple_explode) {
 	this->status_bar.player_stats->reset();
 	this->status_bar.reset();
 	this->is_game_started = false;
+	this->math_status = QUESTION;
 	this->math.reset();
 }
 
@@ -655,6 +694,9 @@ void GameScene::food_check() {
 	optional<Food> food_collided = this->math.q_now.check_collision(this->player.get_head_pos_center(), this->player.snake_body_radius);
 	if (food_collided.has_value()){
 		long long pts = get_pts(food_collided.value());
+		this->last_food = food_collided.value();
+		this->math_status = FEEDBACK;
+		this->game_state_manager->timer.attach(3.0, [this](){this->math_status = QUESTION;});
 
 		// Jangan bikin skor negatif
 		this->player_stats.pts = max(static_cast<long long>(0), this->player_stats.pts + pts);
@@ -679,8 +721,9 @@ void GameScene::update() {
 				this->status_bar.update();
 				this->player.update();
 
-				// Kalau kita menabrak makanan
-				this->food_check();
+				// Kalau kita menabrak makanan. Hanya cek ketika pertanyaan sudah
+				// terlihat.
+				if (this->math_status == QUESTION) this->food_check();
 				break;
 			case CRASH_SELF:
 			case BAD_FOOD:
@@ -710,7 +753,18 @@ void GameScene::draw() {
 			case FALSE:
 				this->ground_texture.Draw(0, 0);
 				this->status_bar.draw();
-				this->math.draw_answers();
+				this->status_bar.draw_stats();
+
+				switch(this->math_status) {
+					case QUESTION:
+						this->status_bar.draw_question();
+						this->math.draw_answers();
+					break;
+					case FEEDBACK:
+						this->status_bar.draw_feedback(this->last_food);
+					break;
+				}
+
 				this->player.draw();
 				break;
 
