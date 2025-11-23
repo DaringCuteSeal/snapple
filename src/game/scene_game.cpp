@@ -150,7 +150,7 @@ void MathQuestion::draw_question(int x, int y, raylib::Font* game_font, Color co
 
 optional<Food> MathQuestion::check_collision(raylib::Vector2 head_location, float head_radius) {
 	for (size_t i = 0; i < 3; i++) {
-		if (!CheckCollisionCircles(this->coords_pixel[i], head_radius*2, head_location, head_radius)) continue;
+		if (!CheckCollisionCircles(this->coords[i].to_vector2_center(), head_radius*2, head_location, head_radius)) continue;
 		if (i == 0) return get_food(this->difficulty); else return BAD_APPLE;
 	}
 	return nullopt;
