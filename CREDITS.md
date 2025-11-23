@@ -1,14 +1,15 @@
 # Code
-@DaringCuteSeal
+Cikitta T. - @DaringCuteSeal
 
 # Sprites & Textures
-- Intro animations: @DaringCuteSeal
-- Snake: @DaringCuteSeal
-- Apple:
-- Rotten apple:
-- Apple pie:
-- Golden apple pie:
-- Heart:
+- Intro animations: Cikitta T. - @DaringCuteSeal
+- Snake: Cikitta T. @DaringCuteSeal
+- Apple: Olivia P.
+- Rotten apple: Olivia P.
+- Apple pie: Victoria L.
+- Golden apple pie: Victoria L.
+- Heart: Michele M.
+- The other irrelevant 2²⁰ little things: Cikitta T. 
 
 # Music & SFX
 - `heavenly-choir.mp3`: Sound Effect by <a href="https://pixabay.com/users/jesuschristisgod-44370300/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=322708">I Love Jesus Christ</a> from <a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=322708">Pixabay</a>
