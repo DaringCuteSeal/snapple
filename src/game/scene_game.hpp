@@ -241,6 +241,7 @@ private:
 	const float snake_point_radius = TILE_DIMENSION / 15.0;
 
 	const Color snake_color = Color { .r = 87, .g = 141, .b = 237, .a = 255 };
+	const Color snake_color_pattern = Color { .r = 255, .g = 237, .b = 165, .a = 255 };
 
 	// Titik-titik yang menjadi tubuh ular pengguna (tidak termasuk kepala).
 	vector<Vector2> points;

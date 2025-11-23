@@ -572,8 +572,10 @@ void Player::draw() {
 	size_t points_size = points.size();
 	DrawLineStrip(this->points.data(), this->points.size(), this->snake_color);
 
-	for (size_t i = 1; i < points_size; i++) {
-		DrawCircle(this->points[i].x, this->points[i].y, this->snake_body_radius, this->snake_color);
+	for (size_t i = points_size - 1; i >= 1; i--) {
+		if (i == 8 || i == 9 || i == 14 || i == 15) { // gambar pola
+			DrawCircle(this->points[i].x, this->points[i].y, this->snake_body_radius, this->snake_color_pattern);
+		} else DrawCircle(this->points[i].x, this->points[i].y, this->snake_body_radius, this->snake_color);
 	}
 
 	// Gambar kepala
@@ -641,7 +643,6 @@ void GameScene::update() {
 		}
 	}
 }
-
 
 void GameScene::draw() {
 	if (this->is_game_started) {
