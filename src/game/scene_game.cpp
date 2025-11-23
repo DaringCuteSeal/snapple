@@ -1,5 +1,4 @@
 #include "scene_game.hpp"
-#include <dbg.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <string>
@@ -85,6 +84,7 @@ AppleExplosion::AppleExplosion() {
 	for (size_t i = 0; i < this->n_frames; i++){
 		this->explosion_animation[i].Load(this->frames[i]);
 	}
+	this->explosion_sound.Load(this->explosion_sound_file);
 	this->last_time = GetTime();
 	this->time_per_frame = 1.0/this->fps;
 }
@@ -106,8 +106,13 @@ bool AppleExplosion::ended() {
 	return this->current_frame == this->n_frames - 1;
 }
 
+void AppleExplosion::explode_sound() {
+	this->explosion_sound.Play();
+}
+
 void AppleExplosion::update() {
 	if (this->current_frame >= this->n_frames - 1) return;
+	if (this->current_frame == this->frame_apple_disappear) this->explode_sound();
 	if (GetTime() - last_time >= this->time_per_frame) {
 		this->current_frame += 1;
 		this->last_time = GetTime();
@@ -493,6 +498,7 @@ Player::Player() {
 	this->snake_head_l.Load(this->texture_snake_head_l);
 	this->snake_head_d.Load(this->texture_snake_head_d);
 	this->snake_head_r.Load(this->texture_snake_head_r);
+	this->turn_sound.Load(this->turn_sound_file);
 	this->reset();
 }
 
@@ -572,15 +578,24 @@ bool Player::check_collision_corners() {
 	return (this->head_pos.x < 0 || this->head_pos.x + TILE_DIMENSION > TILE_COLUMNS * TILE_DIMENSION || this->head_pos.y < TILE_DIMENSION || this->head_pos.y > TILE_ROWS * TILE_DIMENSION);
 }
 
-void Player::check_collision() {
+void Player::check_collision(bool* play_bgmusic) {
 	if (this->check_collision_self()) {
 		this->game_over = CRASH_SELF;
+		*play_bgmusic = false;
 		this->active = false;
+		this->lose_sound->Play();
 	}
 	if (this->check_collision_corners()) {
 		this->game_over = CRASH_WALL;
+		*play_bgmusic = false;
 		this->active = false;
+		this->lose_sound->Play();
 	};
+}
+
+void Player::init(raylib::Sound* lose_sound, bool* play_bgmusic) {
+	this->lose_sound = lose_sound;
+	this->play_bgmusic = play_bgmusic;
 }
 
 void Player::unqueue_turn() {
@@ -599,7 +614,7 @@ void Player::update() {
 	if (!active) return;
 
 	if (this->try_check_collision) {
-		this->check_collision();
+		this->check_collision(this->play_bgmusic);
 	}
 
 	// Hanya terjadi sekali tiap main.
@@ -666,6 +681,10 @@ GameScene::GameScene() {
 	this->dead_crash_wall_texture.Load(this->dead_crash_wall_file);
 	this->dead_popup_x = (SCREEN_WIDTH - this->dead_popup_dimension_x)/2;
 	this->dead_popup_y = (SCREEN_HEIGHT - this->dead_popup_dimension_y)/2;
+	this->bad_apple_sound.Load(this->bad_apple_sound_file);
+	this->correct_apple_sound.Load(this->correct_apple_sound_file);
+	this->heavenly_choir_sound.Load(this->heavenly_choir_sound_file);
+	this->lose_sound.Load(this->lose_sound_file);
 }
 
 void GameScene::reset(bool apple_explode) {
@@ -679,13 +698,16 @@ void GameScene::reset(bool apple_explode) {
 	this->is_game_started = false;
 	this->math_status = QUESTION;
 	this->math.reset();
+	*this->play_bgmusic = true;
 }
 
-void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager, function<void()> menu_callback) {
+void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager, function<void()> menu_callback, bool* play_bgmusic) {
 	this->math.init(game_font);
 	this->menu_callback = menu_callback;
 	this->status_bar.init(game_font, &this->math.q_now, &this->player_stats);
 	this->player_stats.init(game_font);
+	this->play_bgmusic = play_bgmusic;
+	this->player.init(&this->lose_sound, this->play_bgmusic);
 	this->game_state_manager = game_state_manager;
 	this->reset(true);
 }
@@ -693,6 +715,15 @@ void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* 
 void GameScene::food_check() {
 	optional<Food> food_collided = this->math.q_now.check_collision(this->player.get_head_pos_center(), this->player.snake_body_radius);
 	if (food_collided.has_value()){
+		Food food = food_collided.value();
+		if (food == BAD_APPLE) {
+			this->bad_apple_sound.Play();
+		} else if (food == GOLDEN_APPLE_PIE) {
+			this->heavenly_choir_sound.Play();
+		} else {
+			this->correct_apple_sound.Play();
+		}
+
 		long long pts = get_pts(food_collided.value());
 		this->last_food = food_collided.value();
 		this->math_status = FEEDBACK;
@@ -707,6 +738,8 @@ void GameScene::food_check() {
 			this->player_stats.lives -= 1;
 			if (this->player_stats.lives == 0) {
 				this->draw(); // buat update statusbar untuk terakhir kalinya
+				this->lose_sound.Play();
+				*this->play_bgmusic = false;
 				this->player.game_over = BAD_FOOD;
 			}
 		}

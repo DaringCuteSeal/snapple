@@ -8,6 +8,8 @@
  */
 int main() {
 	raylib::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
+	InitAudioDevice();
+	SetMasterVolume(1.0);
 
 	// Setel FPS (frame per second)
 	SetTargetFPS(FPS);

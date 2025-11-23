@@ -17,6 +17,10 @@ private:
 	GameScene game_scene;
 	InterludeScene interlude_scene;
 
+	const char* music_file = "assets/byte-blast.mp3";
+	raylib::Sound background_music;
+	bool play_bgmusic = true;
+
 public:
 	Game();
 	void update();

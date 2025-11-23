@@ -66,6 +66,8 @@ class AppleExplosion {
 	const GameComponents::Coordinate pos = {790, 185};
 	static const size_t n_frames = 17;
 	const size_t frame_apple_disappear = 7;
+	const char* explosion_sound_file = "assets/explode.mp3";
+	raylib::Sound explosion_sound;
 	const char* frames[n_frames] = {
 		"assets/explosion/0.png",
 		"assets/explosion/1.png",
@@ -95,6 +97,7 @@ class AppleExplosion {
 public:
 	AppleExplosion();
 
+	void explode_sound();
 	// Putar ulang
 	void reset();
 	bool ended();
@@ -279,6 +282,10 @@ private:
 	const Color snake_color = Color { .r = 87, .g = 141, .b = 237, .a = 255 };
 	const Color snake_color_pattern = Color { .r = 255, .g = 237, .b = 165, .a = 255 };
 
+	const char* turn_sound_file = "assets/turn.mp3";
+	raylib::Sound turn_sound;
+	raylib::Sound* lose_sound;
+
 	// Titik-titik yang menjadi tubuh ular pengguna (tidak termasuk kepala).
 	vector<Vector2> points;
 
@@ -322,6 +329,8 @@ private:
 
 	bool active = true;
 
+	bool* play_bgmusic;
+
 public:
 	GameOver game_over;
 
@@ -336,9 +345,9 @@ public:
 
 	Player();
 	raylib::Vector2 get_head_pos_center();
-	void init();
+	void init(raylib::Sound* lose_sound, bool* play_bgmusic);
 	void create_snake();
-	void check_collision();
+	void check_collision(bool* play_bgmusic);
 	void update();
 	void draw();
 	void unqueue_turn();
@@ -353,6 +362,15 @@ private:
 	const char* dead_bad_food_file = "assets/dead_bad_food.png";
 	const char* ground_texture_file = "assets/ground.png";
 	const char* ground_texture_apple_file = "assets/interlude_animation/37.png";
+
+	const char* bad_apple_sound_file = "assets/wrong.mp3";
+	const char* correct_apple_sound_file = "assets/crunch.mp3";
+	const char* heavenly_choir_sound_file = "assets/heavenly-choir.mp3";
+	const char* lose_sound_file = "assets/lose.mp3";
+	raylib::Sound bad_apple_sound;
+	raylib::Sound correct_apple_sound;
+	raylib::Sound heavenly_choir_sound;
+	raylib::Sound lose_sound;
 
 	const size_t dead_popup_dimension_y = 587;
 	const size_t dead_popup_dimension_x = 970;
@@ -382,10 +400,12 @@ private:
 	// Callback untuk balik ke main menu game.
 	function<void()> menu_callback;
 
+	bool* play_bgmusic;
+
 public:
 	GameScene();
 	void reset(bool apple_explode);
-	void init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager, function<void()> menu_callback);
+	void init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager, function<void()> menu_callback, bool* play_bgmusic);
 	void draw();
 	void update();
 	void food_check();

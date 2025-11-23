@@ -18,6 +18,8 @@ private:
 	double vy; // kecepatan sumbu y
 	uint8_t bounces;
 	TextState state;
+	raylib::Sound* bounce_sound;
+
 public:
 	GameComponents::Coordinate pos;
 
@@ -32,6 +34,7 @@ public:
 	// construct -_-
 	void load_texture(const char* letter_file_name);
 	void set_ground(size_t y);
+	void set_bounce_sound(raylib::Sound* bounce_sound);
 	void draw();
 	void update();
 };
@@ -42,6 +45,8 @@ private:
 	const uint fps = 13;
 	static const size_t n_frames = 141;
 	const size_t start_loop = 119; // mulai loop sampe pemain mulai game
+	const char* bounce_sound_file = "assets/boing.mp3";
+	raylib::Sound bounce_sound;
 	const char* frames[n_frames] = {
 		"assets/intro_animation/0.png",
 		"assets/intro_animation/1.png",
@@ -224,6 +229,8 @@ private:
 
 	LetterSprite letter_sprites[n_letters];
 
+	const char* game_start_sound_file = "assets/game-start.mp3";
+	raylib::Sound game_start_sound;
 	const char* background_filename = "assets/background.png";
 	raylib::Texture2D background;
 	double time_per_frame;

@@ -7,11 +7,13 @@ IntroScene::IntroScene() {
 	for (size_t i = 0; i < this->n_frames; i++) {
 		this->intro_animation[i].Load(this->frames[i]);
 	}
+	this->game_start_sound.Load(this->game_start_sound_file);
 	this->time_per_frame = 1.0/this->fps;
 	this->last_time = GetTime();
 	this->hint_text_last_time = GetTime();
 	this->is_looping = false;
 	this->ready_to_start_game = false;
+	this->bounce_sound.Load(this->bounce_sound_file);
 
 	this->background.Load(this->background_filename);
 	this->show_hint_text = false;
@@ -21,6 +23,7 @@ IntroScene::IntroScene() {
 	// load texture nya letters kita
 	for (size_t i = 0; i < this->n_letters; i++) {
 		this->letter_sprites[i].load_texture(this->letters[i]);
+		this->letter_sprites[i].set_bounce_sound(&this->bounce_sound);
 		this->letter_sprites[i].pos.row = this->letters_y_min;
 		this->letter_sprites[i].pos.col = this->letters_x_pos[i];
 	}
@@ -131,6 +134,7 @@ void IntroScene::update() {
 				this->show_hint_text = false;
 				this->letters_fly_up();
 			}});
+			this->game_start_sound.Play();
 			this->ready_to_start_game = true;
 		}
 
@@ -150,6 +154,10 @@ void IntroScene::update() {
 LetterSprite::LetterSprite() {
 	this->state = NONE;
 	this->vy = 0;
+}
+
+void LetterSprite::set_bounce_sound(raylib::Sound* bounce_sound) {
+	this->bounce_sound = bounce_sound;
 }
 
 void LetterSprite::load_texture(const char* letter_file_name) {
@@ -187,6 +195,7 @@ void LetterSprite::update() {
 				this->vy = this->vy * -1 * this->COR; // balik kecepatan (mantul)
 				this->pos.row = this->ground_y;
 				bounces += 1;
+				if (!this->bounce_sound->IsPlaying()) this->bounce_sound->Play();
 			}
 		break;
 
