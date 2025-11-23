@@ -652,7 +652,7 @@ void GameScene::init(raylib::Font* game_font, GameComponents::GameStateManager* 
 }
 
 void GameScene::food_check() {
-	optional<Food> food_collided = this->math.q_now.check_collision(this->player.head_pos, this->player.snake_body_radius);
+	optional<Food> food_collided = this->math.q_now.check_collision(this->player.get_head_pos_center(), this->player.snake_body_radius);
 	if (food_collided.has_value()){
 		long long pts = get_pts(food_collided.value());
 
