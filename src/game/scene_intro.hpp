@@ -248,9 +248,12 @@ private:
 	GameComponents::GameStateManager* game_state_manager;
 
 public:
-	// Main animasi dari awal.
+	/** Main animasi dari awal.
+	 */
 	void replay();
-	// Reset, tanpa main animasi dari awal.
+
+	/** Reset, tanpa main animasi dari awal.
+	 */
 	void reset();
 	IntroScene();
 
@@ -258,15 +261,17 @@ public:
 	// dimiliki kelas lain itu harus ada default constructor, makanya aku
 	// jadi pake fungsi init kayak gini. ini gunanya buat dependency
 	// injection doang.
-	//
-	// *perhatian*: fungsi ini HARUS dipanggil SETELAH
-	// konstruksi dan harus diberi argumen non-null! ! !
+	/** *perhatian*: fungsi ini HARUS dipanggil SETELAH
+	* konstruksi dan harus diberi argumen non-null! ! !
+	*/
 	void init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager, function<void()> start_game_callback);
 
-	// Bikin tulisan judul membal ke bawah (sampai `ground_y`).
+	/** Bikin tulisan judul membal ke bawah (sampai `ground_y`).
+	 */
 	void letters_bounce_down();
 
-	// Bikin tulisan judul terbang ke atas (sampai `letters_y_min`).
+	/** Bikin tulisan judul terbang ke atas (sampai `letters_y_min`).
+	*/
 	void letters_fly_up();
 
 	void draw();

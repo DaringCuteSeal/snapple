@@ -7,6 +7,8 @@
 
 #define FONT_PATH "assets/delius-font/delius-regular.ttf"
 
+/** Kelas utama untuk game. Menampung scene-scene yang ditampilkan pada game.
+*/
 class Game {
 private:
 	GameComponents::GameStateManager game_state_manager;
@@ -23,9 +25,19 @@ private:
 
 public:
 	Game();
+	/** Update state game.
+	*/
 	void update();
+	/** Gambar state game.
+	*/
 	void draw();
+	/** Mulai interlude game (di tengah intro dan game).
+	*/
 	void start_game_interlude();
+	/** Mulai game.
+	*/
 	void start_game();
+	/** Kembali ke main menu game.
+	*/
 	void go_back_to_menu();
 };

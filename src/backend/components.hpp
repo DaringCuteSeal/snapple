@@ -162,7 +162,14 @@ struct Coordinate {
 	int col;
 
 	Coordinate operator +(const Coordinate& other) const;
+	/** Tambahkan baris ke koordinat ini. Method ini mengembalikan sebuah
+	* `Coordinate` lain sehingga dapat digunakan untuk chaining.
+	*/
 	Coordinate add_row(int r);
+
+	/** Tambahkan kolom ke koordinat ini. Method ini mengembalikan sebuah
+	* `Coordinate` lain sehingga dapat digunakan untuk chaining.
+	*/
 	Coordinate add_col(int c);
 	raylib::Vector2 to_vector2() const;
 };

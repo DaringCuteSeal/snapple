@@ -7,14 +7,15 @@
 #define LIVES 3
 #define SNAKE_INITIAL_LENGTH 50 - 1 // gak termasuk kepala
 #define SNAKE_UNIT_LENGTH 5 // banyak panjang untuk ditambah ketika makan angka
-                                                                   // haha makan angka huh ..
+// haha makan angka huh ..
 #define TILE_ROWS 17
 #define TILE_COLUMNS 32
 #define TILE_DIMENSION 60 // sisi segiempat, dalam piksel
 
 using std::pair, std::optional, std::nullopt;
 
-// Arah
+/** Arah.
+ */
 enum Direction {
 	UP,
 	DOWN,
@@ -22,7 +23,8 @@ enum Direction {
 	RIGHT
 };
 
-// Jenis soal yang dikerjakan
+/** Jenis soal yang dikerjakan.
+ */
 enum Difficulty {
 	ADD_SUB_EASY,
 	ADD_SUB_HARD,
@@ -32,6 +34,8 @@ enum Difficulty {
 	POW_SQRT_HARD,
 };
 
+/** Jenis makanan.
+ */
 enum Food {
 	BAD_APPLE,
 	APPLE,
@@ -39,6 +43,8 @@ enum Food {
 	GOLDEN_APPLE_PIE
 };
 
+/** Apakah pemain sudah kalah (dan kenapa).
+ */
 enum GameOver {
 	FALSE,
 	CRASH_WALL,
@@ -46,17 +52,29 @@ enum GameOver {
 	BAD_FOOD,
 };
 
+/** Dapatkan makanan berdasarkan kesulitan.
+ */
 Food get_food(Difficulty difficulty);
+
+/** Dapatkan banyak poin berdasarkan makanan yang dimakan.
+ */
 long long get_pts(Food food);
 
-// Koordinat (dalam tile, bukan piksel)
+/** Koordinat (dalam satuan tile, bukan piksel).
+ */
 struct TileCoord {
 	int row;
 	int col;
 
 	GameComponents::Coordinate to_coord();
 	GameComponents::Coordinate to_coord_center();
+	/** Ubah lokasi ke vector 2 dimensi Raylib, tetapi buat lokasinya menjadi di
+	 * tengah dari tile.
+	*/
 	raylib::Vector2 to_vector2_center();
+
+	/** Ubah lokasi ke vector 2 dimensi Raylib.
+	 */
 	raylib::Vector2 to_vector2();
 };
 
@@ -97,10 +115,17 @@ class AppleExplosion {
 public:
 	AppleExplosion();
 
+	/** Buat suara ledakan.
+	 */
 	void explode_sound();
-	// Putar ulang
+	/** Putar ulang animasi.
+	 */
 	void reset();
+	/** Apakah sudah berakhir?
+	 */
 	bool ended();
+	/** Apakah masih perlu menunjukkan apel?
+	 */
 	bool show_apple();
 	void draw();
 	void update();
@@ -117,7 +142,8 @@ public:
 	PlayerStats();
 	raylib::Font* game_font; // harus diinisialisasi
 
-	// Sisa nyawa pemain.
+	/** Sisa nyawa pemain.
+	 */
 	uint8_t lives = LIVES;
 
 	// TODO: atau ini harusnya ga variabel sendiri, biar kita bisa
@@ -125,7 +151,8 @@ public:
 	// variabel ini dibaca setiap update() scene.
 	uint length = (1 + SNAKE_INITIAL_LENGTH) / SNAKE_UNIT_LENGTH;
 
-	// Skor pemain.
+	/** Skor pemain.
+	 */
 	long long pts = 0;
 
 	void reset();
@@ -137,32 +164,40 @@ public:
 };
 
 struct MathQuestion {
-	// Pertanyaan yang ditampilkan
-	// Kita tidak menyimpan angka-angka aslinya karena tidak penting dan
-	// polymorphism itu ribet.
+	/** Pertanyaan yang ditampilkan
+	* Kita tidak menyimpan angka-angka aslinya karena tidak penting dan
+	* polymorphism itu ribet.
+	*/
 	string display;
 
-	// Jawaban-jawaban pertanyaan.
-	// Untuk memudahkan, jawaban benarnya ada di answers[0]. Semua jawaban
-	// di sini berbeda (harus digaransikan ketika generasi pertanyaan).
+	/** Jawaban-jawaban pertanyaan.
+	* Untuk memudahkan, jawaban benarnya ada di answers[0]. Semua jawaban
+	* di sini berbeda (harus digaransikan ketika generasi pertanyaan).
+	*/
 	long long answers[3];
 
-	// Tile tile jawaban.
+	/** Tile tile jawaban.
+	 */
 	TileCoord coords[3];
 
-	// Tile tile jawaban (dalam koordinat piksel).
+	/** Tile tile jawaban (dalam koordinat piksel).
+	 */
 	raylib::Vector2 coords_pixel[3];
 
-	// Jawaban (dalam string; untuk display);
+	/** Jawaban (dalam string; untuk display);
+	 */
 	string answers_str[3];
 
-	// Kesulitan (buat variasi poin)
+	/** Kesulitan (buat variasi poin)
+	 */
 	Difficulty difficulty;
 
-	// Tulis pertanyaannya.
+	/** Tulis pertanyaannya.
+	 */
 	void draw_question(raylib::Vector2 pos, raylib::Font* game_font, Color color);
 
-	// Cek tabrakan dengan makanan.
+	/** Cek tabrakan dengan makanan.
+	 */
 	optional<Food> check_collision(raylib::Vector2 head_location, float head_radius);
 };
 
@@ -186,17 +221,20 @@ private:
 public:
 	MathQuestionDisplay();
 
-	// Pertanyaan sekarang. Bisa digunakan sebagai pointer untuk object lain.
-	// (Tidak pernah invalid selama kelas ini masih valid).
+	/** Pertanyaan sekarang. Bisa digunakan sebagai pointer untuk object lain.
+	 * (Tidak pernah invalid selama kelas ini masih valid).
+	 */
 	MathQuestion q_now;
 
 	void init(raylib::Font* game_font);
 	void reset();
 
-	// Generate sebuah pertanyaan dan simpan ke state `this->q_now`.
+	/** Generate sebuah pertanyaan dan simpan ke state `this->q_now`.
+	 */
 	void generate_new_question();
 
-	// Gambar jawaban-jawaban
+	/** Gambar jawaban-jawaban ke arena main.
+	 */
 	void draw_answers();
 };
 
@@ -228,10 +266,12 @@ private:
 	const Color math_feedback_color_correct = GREEN;
 	const Color math_feedback_color_wrong = ORANGE;
 
-	// Posisi untuk menyembunyikan statusbar.
+	/** Posisi untuk menyembunyikan statusbar.
+	 */
 	const float min_statusbar_pos_y = -80;
 
-	// Posisi seharusnya
+	/** Posisi y seharusnya
+	 */
 	const int pos_y = -5;
 
 	const int vy = 3;
@@ -241,34 +281,44 @@ private:
 
 	bool is_falling = false;
 
-	// Pertanyaan sekarang.
+	/** Pertanyaan sekarang.
+	 */
 	MathQuestion* math_question;
 
 	raylib::Font* game_font;
 
 public:
-	// Statistik pengguna.
+	/** Statistik pengguna.
+	 */
 	PlayerStats* player_stats;
 
-	// Posisi statusbar.
+	/** Posisi statusbar.
+	 */
 	raylib::Vector2 pos = {0, 0};
 
 	StatusBar();
 	void reset();
 	void init(raylib::Font* game_font, MathQuestion* math_question, PlayerStats* player_stats);
 
-	// Gambar bar
+	/** Gambar bar
+	 */
 	void draw();
 
-	// Tulis statistik ke bar
+	/** Tulis statistik ke bar
+	 */
 	void draw_stats();
 
-	// Tulis pertanyaan matematika ke bar
+	/** Tulis pertanyaan matematika ke bar
+	 */
 	void draw_question();
 
-	// Tulis feedback jawaban ke bar
+	/** Tulis feedback jawaban ke bar
+	 */
 	void draw_feedback(Food food);
 	void update();
+
+	/** Buat animasi bar jatuh.
+	 */
 	void fall();
 };
 
@@ -286,14 +336,21 @@ private:
 	raylib::Sound turn_sound;
 	raylib::Sound* lose_sound;
 
-	// Titik-titik yang menjadi tubuh ular pengguna (tidak termasuk kepala).
+	/** Titik-titik yang menjadi tubuh ular pengguna (tidak termasuk kepala).
+	*/
 	vector<Vector2> points;
 
-	// Arah sekarang (a.k.a arah kepala).
+	/** Arah sekarang (a.k.a arah kepala).
+	 */
 	Direction current_direction;
-	
-	// Arah, jika kita perlu berbelok. Kita perlu queue ini karena belokan hanya
-	// dilakukan jika titik tengah dari tekstur
+
+	/** Antrian arah, jika kita perlu berbelok.
+	 *
+	 * Sebenarnya ini tidak diperlukan, tetapi sebelum commit 369b946,
+	 * pemain hanya dapat berbelok ketika kepala ular ada di tengah sebuah
+	 * tile. Variabel dan implementasi ini disimpan jika sewaktu-waktu hal
+	 * tersebut perlu dikembalikan.
+	 */
 	optional<Direction> turn_queue;
 
 	// Tekstur untuk kepala ular.
@@ -305,26 +362,31 @@ private:
 	raylib::Texture2D snake_head_d;
 	raylib::Texture2D snake_head_l;
 	raylib::Texture2D snake_head_r;
-	
-	// Mengembalikan `true` jika kepala (SEKARANG) sedang bertabrakan dengan
-	// titik-titik tubuh lain.
+
+	/** Mengembalikan `true` jika kepala (SEKARANG) sedang bertabrakan dengan
+	* titik-titik tubuh lain.
+	*/
 	bool check_collision_self();
 
-	// Mengembalikan `true` jika kepala (SEKARANG) sedang bertabrakan dengan
-	// dinding.
+	/** Mengembalikan `true` jika kepala (SEKARANG) sedang bertabrakan dengan
+	* dinding.
+	*/
 	bool check_collision_corners();
 
-	// Cek tabrakan dengan makanan dan tambah poin, panjang ular, dsb. jika ya.
+	/** Cek tabrakan dengan makanan dan tambah poin, panjang ular, dsb. jika ya.
+	*/
 	void check_collision_food();
 
-	// Posisi awal ular
+	/** Posisi awal ular
+	*/
 	TileCoord initial_pos = {3, TILE_COLUMNS + 1};
 
-	// Bisa dikendalikan atau tidak?
-	// Ini akan dirubah ketika intro ular masuk selesai.
-	void move(); // ular bergerak sebesar v
-	
-	// Cek collision atau tidak
+	/** Gerakkan ular sebesar v piksel.
+	 */
+	void move(); 
+
+	/** Lakukan cek tabrakan atau tidak.
+	*/
 	bool try_check_collision = false;
 
 	bool active = true;
@@ -337,20 +399,34 @@ public:
 	const float snake_body_radius = TILE_DIMENSION / 5.0;
 
 	bool controllable = false;
-	
+
 	void reset();
 
-	// Posisi kepala.
+	/** Posisi kepala.
+	*/
 	raylib::Vector2 head_pos;
 
 	Player();
 	raylib::Vector2 get_head_pos_center();
 	void init(raylib::Sound* lose_sound, bool* play_bgmusic);
+
+	/** Buat ulang ular.
+	*/
 	void create_snake();
+
+	/** Cek tabrakan pemain.
+	*/
 	void check_collision(bool* play_bgmusic);
+
 	void update();
 	void draw();
+
+	/** Belok (jika sudah diantrikan sebelumnya).
+	*/
 	void unqueue_turn();
+
+	/** Tambah panjang ular.
+	*/
 	void add_length();
 };
 
@@ -391,13 +467,16 @@ private:
 	raylib::Font* game_font;
 	GameComponents::GameStateManager* game_state_manager;
 
-	// Status dari pertanyaan matematika.
+	/** Status dari pertanyaan matematika.
+	 */
 	MathDisplayStatus math_status;
 
-	// Makanan terakhir yang didapat.
+	/** Makanan terakhir yang didapat.
+	 */
 	Food last_food;
 
-	// Callback untuk balik ke main menu game.
+	/** Callback untuk balik ke main menu game.
+	 */
 	function<void()> menu_callback;
 
 	bool* play_bgmusic;
@@ -408,5 +487,9 @@ public:
 	void init(raylib::Font* game_font, GameComponents::GameStateManager* game_state_manager, function<void()> menu_callback, bool* play_bgmusic);
 	void draw();
 	void update();
+
+	/** Cek apakah pemain memakan makanan, lalu tambahkan skor dan panjang tubuh
+	* jika ya sesuai makanan yang dimakan.
+	*/
 	void food_check();
 };
