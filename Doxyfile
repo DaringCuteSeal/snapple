@@ -1,0 +1,7 @@
+PROJECT_NAME           = "Snapple"
+OUTPUT_DIRECTORY       = ./docs
+GENERATE_HTML          = YES
+EXTRACT_ALL            = YES       
+INPUT                  = ./src    
+RECURSIVE              = YES     
+OUTPUT_LANGUAGE = Indonesian
